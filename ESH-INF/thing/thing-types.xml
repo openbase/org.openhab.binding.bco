@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="bco"
+                          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                          xmlns:thing="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0"
+                          xsi:schemaLocation="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0 http://eclipse.org/smarthome/schemas/thing-description-1.0.0.xsd">
+
+    <!-- Sample Thing Type -->
+    <thing-type id="location">
+        <label>BCO Location</label>
+        <description>Location thing for BCO Binding</description>
+
+        <channels>
+            <channel id="power_state" typeId="power_state"/>
+            <channel id="power_state_light" typeId="power_state_light"/>
+            <channel id="standby_state" typeId="standby_state"/>
+            <channel id="brightness_state" typeId="brightness_state"/>
+            <channel id="color_state" typeId="color_state"/>
+            <channel id="target_temperature_state" typeId="target_temperature_state"/>
+            <channel id="power_consumption_state" typeId="power_consumption_state"/>
+            <channel id="motion_state" typeId="motion_state"/>
+            <channel id="illumination_state" typeId="illumination_state"/>
+            <channel id="presence_state" typeId="presence_state"/>
+            <channel id="temperature_state" typeId="temperature_state"/>
+        </channels>
+
+        <!--<config-description>-->
+        <!--<parameter name="config1" type="text" required="true">-->
+        <!--<label>Sample parameter</label>-->
+        <!--<description>This is a sample text configuration parameter.</description>-->
+        <!--</parameter>-->
+        <!--</config-description>-->
+
+    </thing-type>
+
+    <!-- Sample Channel Type -->
+    <!--<channel-type id="sample-channel">-->
+    <!--<item-type>bcoItem</item-type>-->
+    <!--<label>BCO Binding Channel</label>-->
+    <!--<description>Sample channel for BCO Binding</description>-->
+    <!--</channel-type>-->
+
+    <!-- Switch Channel -->
+    <channel-type id="power_state">
+        <item-type>Switch</item-type>
+        <label>Power State</label>
+        <description>Switch the power state of a unit.</description>
+        <category>Light</category>
+    </channel-type>
+    <channel-type id="power_state_light">
+        <item-type>Switch</item-type>
+        <label>Light Power State</label>
+        <description>Switch the power state of all lights in a location.</description>
+        <category>Light</category>
+    </channel-type>
+    <channel-type id="standby_state">
+        <item-type>Switch</item-type>
+        <label>Standby State</label>
+        <description>Switch the standby state of a unit.</description>
+    </channel-type>
+    <channel-type id="brightness_state">
+        <item-type>Dimmer</item-type>
+        <label>Brightness State</label>
+        <description>Set the brightness state of a unit.</description>
+    </channel-type>
+    <channel-type id="color_state">
+        <item-type>Color</item-type>
+        <label>Color State</label>
+        <description>Set the color state of a unit.</description>
+    </channel-type>
+    <channel-type id="target_temperature_state">
+        <item-type>Number</item-type>
+        <label>Target Temperature State</label>
+        <description>Set the target temperature of a unit.</description>
+    </channel-type>
+
+    <channel-type id="power_consumption_state">
+        <item-type>Number</item-type>
+        <label>Power Consumption State</label>
+        <description>Get the power consumption of a unit.</description>
+        <state readOnly="true"></state>
+    </channel-type>
+    <channel-type id="motion_state">
+        <item-type>Number</item-type>
+        <label>Motion State</label>
+        <description>Get the detected motion of a unit.</description>
+        <state readOnly="true"></state>
+    </channel-type>
+    <channel-type id="illumination_state">
+        <item-type>Number</item-type>
+        <label>Illumination State</label>
+        <description>Get the illumination measured by a unit.</description>
+        <state readOnly="true"></state>
+    </channel-type>
+    <channel-type id="presence_state">
+        <item-type>Number</item-type>
+        <label>Presence State</label>
+        <description>Get the presence detected by a unit.</description>
+        <state readOnly="true"></state>
+    </channel-type>
+    <channel-type id="temperature_state">
+        <item-type>Number</item-type>
+        <label>Presence State</label>
+        <description>Get the temperature measured by a unit.</description>
+        <state readOnly="true"></state>
+    </channel-type>
+
+</thing:thing-descriptions>

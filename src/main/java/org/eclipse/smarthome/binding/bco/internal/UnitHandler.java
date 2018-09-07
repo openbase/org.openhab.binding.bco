@@ -46,7 +46,7 @@ import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.unit.unitgroup.UnitGroupRemote;
-import org.openbase.bco.registry.login.SystemLogin;
+import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.pattern.Observer;
@@ -132,7 +132,7 @@ public class UnitHandler extends BaseThingHandler {
         //TODO: login, when yes which user?
         if (!SessionManager.getInstance().isLoggedIn()) {
             try {
-                SystemLogin.loginBCOUser();
+                BCOLogin.loginBCOUser();
             } catch (CouldNotPerformException | InterruptedException ex) {
                 logger.error("Could not login bco user", ex);
             }

@@ -25,6 +25,9 @@ package org.eclipse.smarthome.binding.bco.internal;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * The {@link BCOBindingConstants} class defines common constants, which are
  * used across the whole binding.
@@ -34,21 +37,26 @@ import org.eclipse.smarthome.core.thing.ThingTypeUID;
 @NonNullByDefault
 public class BCOBindingConstants {
 
-    private static final String BINDING_ID = "bco";
-
-    // List of all Thing Type UIDs
-    public static final ThingTypeUID THING_TYPE_LOCATION = new ThingTypeUID(BINDING_ID, "location");
+    public static final String BINDING_ID = "bco";
 
     // List of all Channel ids
-    public static final String CHANNEL_POWER = "power_state";
     public static final String CHANNEL_POWER_LIGHT = "power_state_light";
-    public static final String CHANNEL_STANDBY = "standby_state";
-    public static final String CHANNEL_BRIGHTNESS = "brightness_state";
-    public static final String CHANNEL_COLOR = "color_state";
-    public static final String CHANNEL_TARGET_TEMPERATURE = "target_temperature_state";
-    public static final String CHANNEL_POWER_CONSUMPTION = "power_consumption_state";
-    public static final String CHANNEL_MOTION = "motion_state";
-    public static final String CHANNEL_ILLUMINATION = "illumination_state";
-    public static final String CHANNEL_PRESENCE = "presence_state";
-    public static final String CHANNEL_TEMPERATURE = "temperature_state";
+
+    public static final String UNIT_THING_TYPE = "unit";
+    static Set<ThingTypeUID> THING_TYPES = new HashSet<>();
+
+    static {
+        THING_TYPES.add(new ThingTypeUID(BINDING_ID, UNIT_THING_TYPE));
+    }
+//
+//    static {
+//        //TODO: skip unsupported unit types
+//        for (final UnitType unitType : UnitType.values()) {
+//            THING_TYPES.add(getThingTypeByUnitType(unitType));
+//        }
+//    }
+//
+//    static ThingTypeUID getThingTypeByUnitType(final UnitType unitType) {
+//        return new ThingTypeUID(BINDING_ID, unitType.name().toLowerCase());
+//    }
 }

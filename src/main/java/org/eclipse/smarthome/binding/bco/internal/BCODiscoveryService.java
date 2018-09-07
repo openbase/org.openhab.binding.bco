@@ -26,6 +26,7 @@ import org.eclipse.smarthome.config.discovery.AbstractDiscoveryService;
 import org.eclipse.smarthome.config.discovery.DiscoveryResult;
 import org.eclipse.smarthome.config.discovery.DiscoveryResultBuilder;
 import org.eclipse.smarthome.config.discovery.DiscoveryService;
+import org.eclipse.smarthome.core.thing.ThingTypeUID;
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -33,13 +34,15 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.ProtobufListDiff;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.processing.StringProcessor;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.device.DeviceClassType.DeviceClass;
+
+import java.util.List;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -54,33 +57,21 @@ public class BCODiscoveryService extends AbstractDiscoveryService {
     private final ProtobufListDiff<String, UnitConfig, UnitConfig.Builder> diff;
 
     public BCODiscoveryService() throws IllegalArgumentException {
-        super(BCOHandlerFactory.SUPPORTED_THING_TYPES_UIDS, TIMEOUT);
+        super(BCOBindingConstants.THING_TYPES, TIMEOUT);
 
         diff = new ProtobufListDiff<>();
         unitRegistryObserver = (observable, unitRegistryData) -> {
             try {
-                logger.info("UnitRegistryObserver triggered");
-                if(!Registries.getTemplateRegistry().isDataAvailable()) {
-                    Registries.getTemplateRegistry().waitForData();
-                }
-                diff.diff(Registries.getUnitRegistry().getUnitConfigs(UnitType.LOCATION));
+                diff.diff(getHandledUnitConfigList());
 
                 // add new locations to discovery
                 for (final UnitConfig unitConfig : diff.getNewMessageMap().getMessages()) {
-                    logger.info("Add thing for unit: " + unitConfig.getAlias(0));
-                    final ThingUID thingUID = getThingUID(unitConfig);
-                    final String label = LabelProcessor.getBestMatch(unitConfig.getLabel());
-                    final DiscoveryResult discoveryResult = DiscoveryResultBuilder.create(thingUID).withLabel(label).
-                            withRepresentationProperty(StringProcessor.transformUpperCaseToCamelCase(unitConfig.getUnitType().name())).build();
-
-                    thingDiscovered(discoveryResult);
+                    thingDiscovered(getDiscoveryResult(unitConfig));
                 }
 
                 // remove discovered removed locations
                 for (final UnitConfig unitConfig : diff.getRemovedMessageMap().getMessages()) {
-                    final ThingUID thingUID = getThingUID(unitConfig);
-
-                    thingRemoved(thingUID);
+                    thingRemoved(getThingUID(unitConfig));
                 }
             } catch (CouldNotPerformException ex) {
                 logger.error("Could not discover things", ex);
@@ -91,22 +82,53 @@ public class BCODiscoveryService extends AbstractDiscoveryService {
     @Override
     protected void startScan() {
         try {
-            for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.LOCATION)) {
-                final ThingUID thingUID = getThingUID(unitConfig);
-                final String label = LabelProcessor.getBestMatch(unitConfig.getLabel());
-                final DiscoveryResult discoveryResult = DiscoveryResultBuilder.create(thingUID).withLabel(label).build();
-
-                thingDiscovered(discoveryResult);
+            for (final UnitConfig unitConfig : getHandledUnitConfigList()) {
+                thingDiscovered(getDiscoveryResult(unitConfig));
             }
         } catch (CouldNotPerformException ex) {
             logger.error("Could not scan for BCO things", ex);
         }
     }
 
+    private List<UnitConfig> getHandledUnitConfigList() throws CouldNotPerformException {
+        List<UnitConfig> unitConfigs = Registries.getUnitRegistry().getUnitConfigs();
+        for (int i = 0; i < unitConfigs.size(); i++) {
+            final UnitConfig unitConfig = unitConfigs.get(i);
+
+            // ignore all units without services
+            if (unitConfig.getServiceConfigCount() == 0) {
+                unitConfigs.remove(i);
+                i--;
+                continue;
+            }
+
+            // ignore all units from devices handled by the openhab app
+            if (!unitConfig.getUnitHostId().isEmpty()) {
+                UnitConfig unitHost = Registries.getUnitRegistry().getUnitConfigById(unitConfig.getUnitHostId());
+                if (unitHost.getUnitType() == UnitType.DEVICE) {
+                    if (!Registries.getClassRegistry().isDataAvailable()) {
+                        try {
+                            Registries.getClassRegistry().waitForData();
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            throw new CouldNotPerformException("Could not wait for class registry data");
+                        }
+                    }
+                    DeviceClass deviceClass = Registries.getClassRegistry().getDeviceClassById(unitHost.getDeviceConfig().getDeviceClassId());
+                    if (deviceClass.getBindingConfig().getBindingId().equalsIgnoreCase("openhab")) {
+                        unitConfigs.remove(i);
+                        i--;
+                    }
+                }
+            }
+        }
+
+        return unitConfigs;
+    }
+
     @Override
     protected void startBackgroundDiscovery() {
         try {
-            logger.info("Start background discovery" + Registries.getUnitRegistry().isDataAvailable());
             Registries.getUnitRegistry().addDataObserver(unitRegistryObserver);
         } catch (NotAvailableException ex) {
             logger.warn("Could not start background discovery", ex);
@@ -123,7 +145,12 @@ public class BCODiscoveryService extends AbstractDiscoveryService {
     }
 
     private ThingUID getThingUID(final UnitConfig unitConfig) {
-        //TODO: should depend on the unit type
-        return new ThingUID(BCOBindingConstants.THING_TYPE_LOCATION, unitConfig.getId());
+        return new ThingUID(new ThingTypeUID(BCOBindingConstants.BINDING_ID, BCOBindingConstants.UNIT_THING_TYPE), unitConfig.getId());
+    }
+
+    private DiscoveryResult getDiscoveryResult(final UnitConfig unitConfig) throws NotAvailableException {
+        final ThingUID thingUID = getThingUID(unitConfig);
+        final String label = LabelProcessor.getBestMatch(unitConfig.getLabel());
+        return DiscoveryResultBuilder.create(thingUID).withLabel(label).build();
     }
 }

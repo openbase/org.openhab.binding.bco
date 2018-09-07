@@ -24,21 +24,12 @@ package org.eclipse.smarthome.binding.bco.internal;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.smarthome.config.core.Configuration;
 import org.eclipse.smarthome.core.thing.Thing;
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
-import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandlerFactory;
 import org.eclipse.smarthome.core.thing.binding.ThingHandler;
 import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
 import org.osgi.service.component.annotations.Component;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Collections;
-import java.util.Set;
-
-import static org.eclipse.smarthome.binding.bco.internal.BCOBindingConstants.THING_TYPE_LOCATION;
 
 /**
  * The {@link BCOHandlerFactory} is responsible for creating things and thing
@@ -50,36 +41,13 @@ import static org.eclipse.smarthome.binding.bco.internal.BCOBindingConstants.THI
 @Component(configurationPid = "binding.bco", service = ThingHandlerFactory.class)
 public class BCOHandlerFactory extends BaseThingHandlerFactory {
 
-    public static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Collections.singleton(THING_TYPE_LOCATION);
-
-    private final Logger logger = LoggerFactory.getLogger(BCOHandlerFactory.class);
-
-    public BCOHandlerFactory() {
-        logger.warn("BCO Handler factory created");
+    @Override
+    public boolean supportsThingType(final ThingTypeUID thingTypeUID) {
+        return BCOBindingConstants.THING_TYPES.contains(thingTypeUID);
     }
 
     @Override
-    public boolean supportsThingType(ThingTypeUID thingTypeUID) {
-        logger.warn("BCO supported things returned {}, {}", thingTypeUID, SUPPORTED_THING_TYPES_UIDS.contains(thingTypeUID));
-        return SUPPORTED_THING_TYPES_UIDS.contains(thingTypeUID);
-    }
-
-    @Override
-    protected @Nullable Thing createThing(ThingTypeUID thingTypeUID, Configuration configuration, ThingUID thingUID) {
-        logger.warn("Create thing {}, {}, {}", thingUID, thingTypeUID, configuration);
-        return super.createThing(thingTypeUID, configuration, thingUID);
-    }
-
-    @Override
-    protected @Nullable ThingHandler createHandler(Thing thing) {
-        logger.warn("Create handler called");
-        ThingTypeUID thingTypeUID = thing.getThingTypeUID();
-
-        logger.warn("Create thing for type {}, location type {}", thing.getThingTypeUID(), THING_TYPE_LOCATION);
-        if (THING_TYPE_LOCATION.equals(thingTypeUID)) {
-            return new UnitHandler(thing);
-        }
-
-        return null;
+    protected @Nullable ThingHandler createHandler(final Thing thing) {
+        return new UnitHandler(thing);
     }
 }

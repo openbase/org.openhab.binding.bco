@@ -89,7 +89,8 @@
                         <Ignore-Package>org.eclipse.smarthome.binding.bco.internal</Ignore-Package>
                         <Import-Package>
                             !rst.*,!rsb.*,!org.openbase.*,!com.googlecode.protobuf.*,!sun.*,!com.fasterxml*,!com.sun.*,
-                            !groovy.*,!org.apache.*,!org.codehaus.*,!org.eclipse.jgit.*,!org.osgi.service.component.*,*
+                            !groovy.*,!org.apache.*,!org.codehaus.*,!org.eclipse.jgit.*,!org.osgi.service.component.*,
+                            !org.hibernate.*,*
                         </Import-Package>
                         <Export-Package>org.eclipse.smarthome.binding.bco</Export-Package>
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
@@ -263,12 +264,7 @@
     <dependencies>
         <dependency>
             <groupId>org.openbase</groupId>
-            <artifactId>bco.dal.remote</artifactId>
-            <version>${dependency.bco.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openbase</groupId>
-            <artifactId>jul.exception</artifactId>
+            <artifactId>bco.app.openhab</artifactId>
             <version>${dependency.bco.version}</version>
         </dependency>
         <!--<dependency>-->

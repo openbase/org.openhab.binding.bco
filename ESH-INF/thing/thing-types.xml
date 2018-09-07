@@ -5,23 +5,9 @@
                           xsi:schemaLocation="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0 http://eclipse.org/smarthome/schemas/thing-description-1.0.0.xsd">
 
     <!-- Sample Thing Type -->
-    <thing-type id="location">
-        <label>BCO Location</label>
-        <description>Location thing for BCO Binding</description>
-
-        <channels>
-            <channel id="power_state" typeId="power_state"/>
-            <channel id="power_state_light" typeId="power_state_light"/>
-            <channel id="standby_state" typeId="standby_state"/>
-            <channel id="brightness_state" typeId="brightness_state"/>
-            <channel id="color_state" typeId="color_state"/>
-            <channel id="target_temperature_state" typeId="target_temperature_state"/>
-            <channel id="power_consumption_state" typeId="power_consumption_state"/>
-            <channel id="motion_state" typeId="motion_state"/>
-            <channel id="illumination_state" typeId="illumination_state"/>
-            <channel id="presence_state" typeId="presence_state"/>
-            <channel id="temperature_state" typeId="temperature_state"/>
-        </channels>
+    <thing-type id="unit">
+        <label>BCO Unit</label>
+        <description>Generic thing type for a bco unit</description>
 
         <!--<config-description>-->
         <!--<parameter name="config1" type="text" required="true">-->
@@ -72,6 +58,16 @@
         <label>Target Temperature State</label>
         <description>Set the target temperature of a unit.</description>
     </channel-type>
+    <channel-type id="blind_state">
+        <item-type>Rollershutter</item-type>
+        <label>Blind State</label>
+        <description>Control the blind state of a unit.</description>
+    </channel-type>
+    <channel-type id="activation_state">
+        <item-type>Switch</item-type>
+        <label>Activation State</label>
+        <description>Activate a unit.</description>
+    </channel-type>
 
     <channel-type id="power_consumption_state">
         <item-type>Number</item-type>
@@ -85,7 +81,7 @@
         <description>Get the detected motion of a unit.</description>
         <state readOnly="true"></state>
     </channel-type>
-    <channel-type id="illumination_state">
+    <channel-type id="illuminance_state">
         <item-type>Number</item-type>
         <label>Illumination State</label>
         <description>Get the illumination measured by a unit.</description>
@@ -99,8 +95,56 @@
     </channel-type>
     <channel-type id="temperature_state">
         <item-type>Number</item-type>
-        <label>Presence State</label>
+        <label>Temperature State</label>
         <description>Get the temperature measured by a unit.</description>
+        <state readOnly="true"></state>
+    </channel-type>
+    <channel-type id="tamper_state">
+        <item-type>Number</item-type>
+        <label>Tamper State</label>
+        <description>Get if a unit is tampered.</description>
+        <state readOnly="true"></state>
+    </channel-type>
+    <channel-type id="battery_state">
+        <item-type>Number</item-type>
+        <label>Battery State</label>
+        <description>Get the battery level of a unit.</description>
+        <state readOnly="true"></state>
+    </channel-type>
+    <channel-type id="smoke_alarm_state">
+        <item-type>Number</item-type>
+        <label>Smoke Alarm State</label>
+        <description>Get if the unit reports a smoke alarm.</description>
+        <state readOnly="true"></state>
+    </channel-type>
+    <channel-type id="smoke_state">
+        <item-type>Number</item-type>
+        <label>Smoke State</label>
+        <description>Get the smoke value measured by a unit.</description>
+        <state readOnly="true"></state>
+    </channel-type>
+    <channel-type id="temperature_alarm_state">
+        <item-type>Number</item-type>
+        <label>Temperature Alarm State</label>
+        <description>Get if the unit reports a temperature alarm.</description>
+        <state readOnly="true"></state>
+    </channel-type>
+    <channel-type id="button_state">
+        <item-type>Switch</item-type>
+        <label>Button State</label>
+        <description>Get the button state of a unit.</description>
+        <state readOnly="true"></state>
+    </channel-type>
+    <channel-type id="contact_state">
+        <item-type>Contact</item-type>
+        <label>Contact State</label>
+        <description>Get the contact state of a unit.</description>
+        <state readOnly="true"></state>
+    </channel-type>
+    <channel-type id="handle_state">
+        <item-type>String</item-type>
+        <label>Handle State</label>
+        <description>Get the handle state of a unit.</description>
         <state readOnly="true"></state>
     </channel-type>
 

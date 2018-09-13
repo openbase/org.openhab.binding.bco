@@ -5,9 +5,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <!--<parent>-->
-        <!--<artifactId>pom</artifactId>-->
-        <!--<groupId>org.eclipse.smarthome.binding</groupId>-->
-        <!--<version>0.10.0-SNAPSHOT</version>-->
+    <!--<artifactId>pom</artifactId>-->
+    <!--<groupId>org.eclipse.smarthome.binding</groupId>-->
+    <!--<version>0.10.0-SNAPSHOT</version>-->
     <!--</parent>-->
 
     <groupId>org.eclipse.smarthome.binding</groupId>
@@ -18,13 +18,13 @@
 
     <name>BCO Binding</name>
     <inceptionYear>2018</inceptionYear>
-    <!--<description>This binding is a gateway between the RobotServiceBus (RSB) and openHab.</description>-->
+    <description>This binding offers and synchronizes all bco units to the eclipse platform. For example if you are using openhab, the binding makes sure all bco units can be controlled via the sitemap.</description>
 
-    <url>https://github.com/openbase/openhab-binding-rsb/wiki</url>
+    <url>https://github.com/openbase/org.eclipse.smarthome.binding.bco/wiki</url>
 
     <organization>
         <name>openbase.org</name>
-        <url>https://github.com/openbase</url>
+        <url>https://openbase.org</url>
     </organization>
 
     <developers>
@@ -34,7 +34,7 @@
             <email>divine@openbase.org</email>
             <url>https://github.com/DivineThreepwood</url>
             <organization>openbase.org</organization>
-            <organizationUrl>https://github.com/openbase</organizationUrl>
+            <organizationUrl>https://openbase.org</organizationUrl>
             <roles>
                 <role>architect</role>
                 <role>developer</role>
@@ -47,7 +47,7 @@
             <email>taminoh@ymail.com</email>
             <url>https://github.com/pLeminoq</url>
             <organization>openbase.org</organization>
-            <organizationUrl>https://github.com/openbase</organizationUrl>
+            <organizationUrl>https://openbase.org</organizationUrl>
             <roles>
                 <role>architect</role>
                 <role>developer</role>
@@ -63,11 +63,12 @@
         </license>
     </licenses>
 
-    <!--<scm>-->
-    <!--<connection>scm:git:https://github.com/openbase/openhab-binding-rsb.git</connection>-->
-    <!--<developerConnection>scm:git:https://github.com/openbase/openhab-binding-rsb.git</developerConnection>-->
-    <!--<url>https://github.com/openbase/openhab-binding-rsb.git</url>-->
-    <!--</scm>-->
+    <scm>
+        <connection>scm:git:https://github.com/openbase/org.eclipse.smarthome.binding.bco.git</connection>
+        <developerConnection>scm:git:https://github.com/openbase/org.eclipse.smarthome.binding.bco.git
+        </developerConnection>
+        <url>https://github.com/openbase/org.eclipse.smarthome.binding.bco.git</url>
+    </scm>
 
     <build>
         <plugins>
@@ -256,7 +257,7 @@
         <!--<bundle.namespace>org.openhab.binding.rsb</bundle.namespace>-->
         <!--<deb.name>openhab-addon-binding-rsb</deb.name>-->
         <!--<deb.description>${project.name}</deb.description>-->
-        <org.eclipse.smarthome.home>/usr/share/openhab/distribution</org.eclipse.smarthome.home>
+        <org.eclipse.smarthome.home></org.eclipse.smarthome.home>
         <dependency.eclipse.smarthome.version>0.9.0</dependency.eclipse.smarthome.version>
         <dependency.bco.version>2.0-SNAPSHOT</dependency.bco.version>
     </properties>
@@ -267,16 +268,6 @@
             <artifactId>bco.app.openhab</artifactId>
             <version>${dependency.bco.version}</version>
         </dependency>
-        <!--<dependency>-->
-        <!--<groupId>org.slf4j</groupId>-->
-        <!--<artifactId>slf4j-api</artifactId>-->
-        <!--<version>1.7.22</version>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-        <!--<groupId>org.slf4j</groupId>-->
-        <!--<artifactId>slf4j-simple</artifactId>-->
-        <!--<version>1.7.22</version>-->
-        <!--</dependency>-->
         <dependency>
             <groupId>org.eclipse.smarthome.core</groupId>
             <artifactId>org.eclipse.smarthome.core.thing</artifactId>

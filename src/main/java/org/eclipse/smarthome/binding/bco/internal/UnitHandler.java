@@ -50,6 +50,7 @@ import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.Remote;
 import org.openbase.jul.pattern.Remote.ConnectionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,7 +75,7 @@ public class UnitHandler extends BaseThingHandler {
 
     private final Logger logger = LoggerFactory.getLogger(UnitHandler.class);
 
-    private final Observer<ConnectionState> connectionStateObserver;
+    private final Observer<Remote, ConnectionState> connectionStateObserver;
     private final Observer unitDataObserver;
 
     private UnitRemote unitRemote;

@@ -34,6 +34,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.ProtobufListDiff;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +54,7 @@ public class BCODiscoveryService extends AbstractDiscoveryService {
     private static final int TIMEOUT = 30;
 
     private final Logger logger = LoggerFactory.getLogger(BCODiscoveryService.class);
-    private final Observer<UnitRegistryData> unitRegistryObserver;
+    private final Observer<DataProvider<UnitRegistryData>, UnitRegistryData> unitRegistryObserver;
     private final ProtobufListDiff<String, UnitConfig, UnitConfig.Builder> diff;
 
     public BCODiscoveryService() throws IllegalArgumentException {

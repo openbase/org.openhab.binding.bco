@@ -15,8 +15,9 @@ if [ ! -d "$ECLIPSE_SMARTHOME_HOME" ]; then
 fi
 
 if [ ! -d "$ECLIPSE_SMARTHOME_HOME" ]; then
-    echo [ERROR] eclipse smarthome homefolder [$ECLIPSE_SMARTHOME_HOME] not found!
-    echo [INFO] please refer the distribution folder by calling "mvn install -Dorg.eclipse.smarthome.home=PATH"
+    echo "[ERROR] eclipse smarthome homefolder [$ECLIPSE_SMARTHOME_HOME] not found!"
+    echo '[INFO] please refer the home folder by calling "mvn install -Dorg.eclipse.smarthome.home=PATH"'
+    echo '[INFO] or globally define the home folder via the system variables: $ECLIPSE_SMARTHOME_HOME or $OPENHAB_HOME'
     echo [WARN] skip binding deploy process...
     exit ;
 fi

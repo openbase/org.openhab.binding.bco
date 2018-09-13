@@ -126,26 +126,26 @@
             <!--<artifactId>jdeb</artifactId>-->
             <!--</plugin>-->
             <!-- deploy binding intro openhab -->
-            <!--<plugin>-->
-            <!--<artifactId>exec-maven-plugin</artifactId>-->
-            <!--<groupId>org.codehaus.mojo</groupId>-->
-            <!--<version>1.5.0</version>-->
-            <!--<executions>-->
-            <!--<execution>-->
-            <!--<id>Deploy Binding</id>-->
-            <!--<phase>install</phase>-->
-            <!--<goals>-->
-            <!--<goal>exec</goal>-->
-            <!--</goals>-->
-            <!--<configuration>-->
-            <!--<executable>${basedir}/deploy.sh</executable>-->
-            <!--<environmentVariables>-->
-            <!--<openhab_distribution>${openhab.distribution}</openhab_distribution>-->
-            <!--</environmentVariables>-->
-            <!--</configuration>-->
-            <!--</execution>-->
-            <!--</executions>-->
-            <!--</plugin>-->
+            <plugin>
+                <artifactId>exec-maven-plugin</artifactId>
+                <groupId>org.codehaus.mojo</groupId>
+                <version>1.5.0</version>
+                <executions>
+                    <execution>
+                        <id>Deploy Binding</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${basedir}/deploy.sh</executable>
+                            <environmentVariables>
+                                <openhab_distribution>${eclipse.smarthome.distribution}</openhab_distribution>
+                            </environmentVariables>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>license-maven-plugin</artifactId>
@@ -256,7 +256,7 @@
         <!--<bundle.namespace>org.openhab.binding.rsb</bundle.namespace>-->
         <!--<deb.name>openhab-addon-binding-rsb</deb.name>-->
         <!--<deb.description>${project.name}</deb.description>-->
-        <!--<openhab.distribution>/usr/share/openhab/distribution</openhab.distribution>-->
+        <eclipse.smarthome.distribution>/usr/share/openhab/distribution</eclipse.smarthome.distribution>
         <dependency.eclipse.smarthome.version>0.10.0-SNAPSHOT</dependency.eclipse.smarthome.version>
         <dependency.bco.version>2.0-SNAPSHOT</dependency.bco.version>
     </properties>

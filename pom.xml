@@ -140,7 +140,7 @@
                         <configuration>
                             <executable>${basedir}/deploy.sh</executable>
                             <environmentVariables>
-                                <openhab_distribution>${eclipse.smarthome.distribution}</openhab_distribution>
+                                <ECLIPSE_SMARTHOME_HOME>${org.eclipse.smarthome.home}</ECLIPSE_SMARTHOME_HOME>
                             </environmentVariables>
                         </configuration>
                     </execution>
@@ -256,8 +256,8 @@
         <!--<bundle.namespace>org.openhab.binding.rsb</bundle.namespace>-->
         <!--<deb.name>openhab-addon-binding-rsb</deb.name>-->
         <!--<deb.description>${project.name}</deb.description>-->
-        <eclipse.smarthome.distribution>/usr/share/openhab/distribution</eclipse.smarthome.distribution>
-        <dependency.eclipse.smarthome.version>0.10.0-SNAPSHOT</dependency.eclipse.smarthome.version>
+        <org.eclipse.smarthome.home>/usr/share/openhab/distribution</org.eclipse.smarthome.home>
+        <dependency.eclipse.smarthome.version>0.9.0</dependency.eclipse.smarthome.version>
         <dependency.bco.version>2.0-SNAPSHOT</dependency.bco.version>
     </properties>
 

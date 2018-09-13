@@ -13,7 +13,6 @@ echo -e "=== ${APP_NAME} project ${WHITE}cleanup${NC}" &&
 mvn clean --quiet $@ &&
 echo -e "=== ${APP_NAME} project ${WHITE}installation${NC}" &&
 mvn install \
-        -DassembleDirectory=${prefix} \
         -DskipTests=true \
         -Dmaven.test.skip=true \
         -Dlicense.skipAddThirdParty=true \
@@ -21,6 +20,5 @@ mvn install \
         -Dlicense.skipDownloadLicenses \
         -Dlicense.skipCheckLicense=true \
         -Dmaven.license.skip=true \
-        -Declipse.smarthome.distribution=$prefix/share/openhab/distribution \
         --quiet $@ &&
 echo -e "=== ${APP_NAME} was ${GREEN}successfully${NC} installed to ${WHITE}${prefix}${NC}"

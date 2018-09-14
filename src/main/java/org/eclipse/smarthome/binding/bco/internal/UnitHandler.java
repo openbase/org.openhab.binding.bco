@@ -42,13 +42,17 @@ import org.openbase.bco.app.openhab.manager.transform.ServiceTypeCommandMapping;
 import org.openbase.bco.app.openhab.registry.synchronizer.OpenHABItemProcessor;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.lib.layer.service.Services;
+import org.openbase.bco.dal.lib.layer.unit.MultiUnitServiceFusion;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
-import org.openbase.bco.dal.remote.unit.unitgroup.UnitGroupRemote;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.CouldNotTransformException;
+import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.TypeNotSupportedException;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.Remote;
 import org.openbase.jul.pattern.Remote.ConnectionState;
@@ -59,7 +63,6 @@ import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.domotic.unit.location.LocationDataType.LocationData;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -76,9 +79,9 @@ public class UnitHandler extends BaseThingHandler {
     private final Logger logger = LoggerFactory.getLogger(UnitHandler.class);
 
     private final Observer<Remote, ConnectionState> connectionStateObserver;
-    private final Observer unitDataObserver;
+    private final Observer unitDataObserver, unitConfigObserver;
 
-    private UnitRemote unitRemote;
+    private UnitRemote<?> unitRemote;
 
     public UnitHandler(Thing thing) {
         super(thing);
@@ -94,37 +97,8 @@ public class UnitHandler extends BaseThingHandler {
                     break;
             }
         };
-        unitDataObserver = (observable, o) -> {
-            final Set<ServiceType> serviceTypeSet = new HashSet<>();
-            for (final ServiceDescription serviceDescription : unitRemote.getUnitTemplate().getServiceDescriptionList()) {
-                final ServiceType serviceType = serviceDescription.getServiceType();
-                if (serviceTypeSet.contains(serviceType)) {
-                    continue;
-                }
-                serviceTypeSet.add(serviceType);
-
-                final Message serviceState = unitRemote.getServiceState(serviceType);
-                for (final Class<Command> commandClass : ServiceTypeCommandMapping.getCommandClasses(serviceType)) {
-                    try {
-                        final ServiceStateCommandTransformer transformer = ServiceStateCommandTransformerPool.getInstance().getTransformer(serviceState.getClass(), commandClass);
-                        try {
-                            final State state = (State) transformer.transform(serviceState);
-                            updateState(getChannelId(serviceType), state);
-                        } catch (ClassCastException ex) {
-                            // command is not a state, is the case e.g. for StopMoveType, just ignore these values
-                        }
-                    } catch (TypeNotPresentException | CouldNotTransformException ex) {
-                        // skip transformation
-                        logger.info("Skip transformation of {} to command {}", serviceState, commandClass.getSimpleName());
-                    }
-                }
-            }
-
-            if (o instanceof LocationData) {
-                PowerStateOnOffTypeTransformer transformer = ServiceStateCommandTransformerPool.getInstance().getTransformer(PowerStateOnOffTypeTransformer.class);
-                updateState(BCOBindingConstants.CHANNEL_POWER_LIGHT, transformer.transform(((LocationRemote) unitRemote).getPowerState(UnitType.LIGHT)));
-            }
-        };
+        unitConfigObserver = (source, config) -> updateThingConfig();
+        unitDataObserver = (source, data) -> updateChannels();
     }
 
     @Override
@@ -182,60 +156,105 @@ public class UnitHandler extends BaseThingHandler {
 
     @Override
     public void initialize() {
-//        config = getConfigAs(BCOConfiguration.class);
-
         try {
             unitRemote = Units.getUnit(getThing().getUID().getId(), false);
 
-            updateAvailableChannels();
-
             unitRemote.addConnectionStateObserver(connectionStateObserver);
+            unitRemote.addConfigObserver(unitConfigObserver);
             unitRemote.addDataObserver(unitDataObserver);
+
+            // perform initial update
+            updateThingConfig();
+            if (unitRemote.isDataAvailable()) {
+                updateChannels();
+            }
         } catch (CouldNotPerformException | InterruptedException ex) {
             logger.error("Could not initialize thing for unit remote", ex);
         }
     }
 
-    private void updateAvailableChannels() throws CouldNotPerformException {
-        try {
-            ThingBuilder thingBuilder = editThing();
-            // clear channels
-            thingBuilder.withChannels();
+    private void updateChannels() throws CouldNotPerformException {
+        final Set<ServiceType> serviceTypeSet = new HashSet<>();
+        for (final ServiceDescription serviceDescription : unitRemote.getUnitTemplate().getServiceDescriptionList()) {
+            final ServiceType serviceType = serviceDescription.getServiceType();
+            if (serviceTypeSet.contains(serviceType)) {
+                continue;
+            }
+            serviceTypeSet.add(serviceType);
 
-            // add all channels
-            UnitConfig config = (UnitConfig) unitRemote.getConfig();
-            Set<ServiceType> serviceTypes = new HashSet<>();
-            switch (config.getUnitType()) {
-                case UNIT_GROUP:
-                    serviceTypes = ((UnitGroupRemote) unitRemote).getSupportedServiceTypes();
-                    break;
-                case LOCATION:
-                    serviceTypes = ((LocationRemote) unitRemote).getSupportedServiceTypes();
-                    break;
-                default:
-                    for (ServiceConfig serviceConfig : config.getServiceConfigList()) {
-                        serviceTypes.add(serviceConfig.getServiceDescription().getServiceType());
-                    }
-                    break;
+            final Message serviceState = unitRemote.getServiceState(serviceType);
+            Set<Class<Command>> commandClasses;
+            try {
+                commandClasses = ServiceTypeCommandMapping.getCommandClasses(serviceType);
+            } catch (NotAvailableException ex) {
+                logger.warn("Skip applying channel update for service {} because no command classes are available", serviceType.name());
+                continue;
             }
 
-            for (ServiceType serviceType : serviceTypes) {
-                ChannelUID channelUID = new ChannelUID(getThing().getUID(), getChannelId(serviceType));
+            for (final Class<Command> commandClass : commandClasses) {
+                try {
+                    final ServiceStateCommandTransformer transformer = ServiceStateCommandTransformerPool.getInstance().getTransformer(serviceState.getClass(), commandClass);
+                    try {
+                        final State state = (State) transformer.transform(serviceState);
+                        updateState(getChannelId(serviceType), state);
+                    } catch (ClassCastException ex) {
+                        // command is not a state, is the case e.g. for StopMoveType, just ignore these values
+                    }
+                } catch (TypeNotSupportedException | CouldNotTransformException ex) {
+                    // skip transformation
+                    logger.info("Skip transformation of {} to command {}", serviceState, commandClass.getSimpleName());
+                }
+            }
+        }
+
+        if (unitRemote instanceof LocationRemote) {
+            PowerStateOnOffTypeTransformer transformer = ServiceStateCommandTransformerPool.getInstance().getTransformer(PowerStateOnOffTypeTransformer.class);
+            updateState(BCOBindingConstants.CHANNEL_POWER_LIGHT, transformer.transform(((LocationRemote) unitRemote).getPowerState(UnitType.LIGHT)));
+        }
+    }
+
+    private void updateThingConfig() throws CouldNotPerformException {
+        final ThingBuilder thingBuilder = editThing();
+        final UnitConfig unitConfig = unitRemote.getConfig();
+
+        // update thing label
+        thingBuilder.withLabel(unitRemote.getLabel());
+        // update thing location
+        UnitConfig location = Registries.getUnitRegistry().getUnitConfigById(unitConfig.getPlacementConfig().getLocationId());
+        thingBuilder.withLocation(LabelProcessor.getBestMatch(location.getLabel()));
+
+        // update available channels
+        // clear channels
+        thingBuilder.withChannels();
+        // add all channels
+        Set<ServiceType> serviceTypes = new HashSet<>();
+        if (unitRemote instanceof MultiUnitServiceFusion) {
+            serviceTypes = ((MultiUnitServiceFusion) unitRemote).getSupportedServiceTypes();
+        } else {
+            for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+                serviceTypes.add(serviceConfig.getServiceDescription().getServiceType());
+            }
+        }
+
+        for (ServiceType serviceType : serviceTypes) {
+            ChannelUID channelUID = new ChannelUID(getThing().getUID(), getChannelId(serviceType));
+            try {
                 Channel channel = ChannelBuilder.create(channelUID, OpenHABItemProcessor.getItemType(serviceType)).build();
                 thingBuilder.withChannel(channel);
+            } catch (NotAvailableException ex) {
+                logger.warn("Skip service {} of unit {} because item type not available", serviceType.name(), unitConfig.getAlias(0));
             }
-
-            updateThing(thingBuilder.build());
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            throw new CouldNotPerformException("Could not update available channels");
         }
+
+        updateThing(thingBuilder.build());
     }
 
     @Override
     public void dispose() {
         unitRemote.removeConnectionStateObserver(connectionStateObserver);
+        unitRemote.removeConfigObserver(unitConfigObserver);
         unitRemote.removeDataObserver(unitDataObserver);
+
         updateStatus(ThingStatus.OFFLINE);
     }
 

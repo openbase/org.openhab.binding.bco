@@ -43,6 +43,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -65,12 +66,12 @@ public class BCODiscoveryService extends AbstractDiscoveryService {
             try {
                 diff.diff(getHandledUnitConfigList());
 
-                // add new locations to discovery
+                // add new units to discovery
                 for (final UnitConfig unitConfig : diff.getNewMessageMap().getMessages()) {
                     thingDiscovered(getDiscoveryResult(unitConfig));
                 }
 
-                // remove discovered removed locations
+                // remove units from discovery
                 for (final UnitConfig unitConfig : diff.getRemovedMessageMap().getMessages()) {
                     thingRemoved(getThingUID(unitConfig));
                 }
@@ -92,14 +93,15 @@ public class BCODiscoveryService extends AbstractDiscoveryService {
     }
 
     private List<UnitConfig> getHandledUnitConfigList() throws CouldNotPerformException {
-        List<UnitConfig> unitConfigs = Registries.getUnitRegistry().getUnitConfigs();
-        for (int i = 0; i < unitConfigs.size(); i++) {
-            final UnitConfig unitConfig = unitConfigs.get(i);
-
+        final List<UnitConfig> handledUnitConfigs = new ArrayList<>();
+        for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs()) {
             // ignore all units without services
             if (unitConfig.getServiceConfigCount() == 0) {
-                unitConfigs.remove(i);
-                i--;
+                continue;
+            }
+
+            // ignore system users
+            if (unitConfig.getUnitType() == UnitType.USER && unitConfig.getUserConfig().getIsSystemUser()) {
                 continue;
             }
 
@@ -117,14 +119,15 @@ public class BCODiscoveryService extends AbstractDiscoveryService {
                     }
                     DeviceClass deviceClass = Registries.getClassRegistry().getDeviceClassById(unitHost.getDeviceConfig().getDeviceClassId());
                     if (deviceClass.getBindingConfig().getBindingId().equalsIgnoreCase("openhab")) {
-                        unitConfigs.remove(i);
-                        i--;
+                        continue;
                     }
                 }
             }
+
+            handledUnitConfigs.add(unitConfig);
         }
 
-        return unitConfigs;
+        return handledUnitConfigs;
     }
 
     @Override

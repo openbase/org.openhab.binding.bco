@@ -85,9 +85,9 @@ public class UnitHandler extends BaseThingHandler {
 
     public UnitHandler(Thing thing) {
         super(thing);
-        logger.info("Create unit handler for thing {}", thing.getUID().toString());
+        logger.debug("Create unit handler for thing {}", thing.getUID().toString());
         connectionStateObserver = (observable, connectionState) -> {
-            logger.info("Unit {} switched to connection state {}", unitRemote.getLabel(), connectionState.name());
+            logger.debug("Unit {} switched to connection state {}", unitRemote.getLabel(), connectionState.name());
             switch (connectionState) {
                 case CONNECTED:
                     updateStatus(ThingStatus.ONLINE);
@@ -103,7 +103,7 @@ public class UnitHandler extends BaseThingHandler {
 
     @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
-        logger.info("Receive command {} for channel {} of unit {}", command.getClass().getSimpleName(), channelUID.getId(), getThing().getUID().getId());
+        logger.debug("Receive command {} for channel {} of unit {}", command.getClass().getSimpleName(), channelUID.getId(), getThing().getUID().getId());
         //TODO: login, when yes which user?
         if (!SessionManager.getInstance().isLoggedIn()) {
             try {
@@ -174,14 +174,21 @@ public class UnitHandler extends BaseThingHandler {
     }
 
     private void updateChannels() throws CouldNotPerformException {
-        final Set<ServiceType> serviceTypeSet = new HashSet<>();
-        for (final ServiceDescription serviceDescription : unitRemote.getUnitTemplate().getServiceDescriptionList()) {
-            final ServiceType serviceType = serviceDescription.getServiceType();
-            if (serviceTypeSet.contains(serviceType)) {
-                continue;
+        final Set<ServiceType> serviceTypeSet;
+        if (unitRemote instanceof MultiUnitServiceFusion) {
+            serviceTypeSet = ((MultiUnitServiceFusion) unitRemote).getSupportedServiceTypes();
+        } else {
+            serviceTypeSet = new HashSet<>();
+            for (final ServiceDescription serviceDescription : unitRemote.getUnitTemplate().getServiceDescriptionList()) {
+                final ServiceType serviceType = serviceDescription.getServiceType();
+                if (serviceTypeSet.contains(serviceType)) {
+                    continue;
+                }
+                serviceTypeSet.add(serviceType);
             }
-            serviceTypeSet.add(serviceType);
+        }
 
+        for (final ServiceType serviceType : serviceTypeSet) {
             final Message serviceState = unitRemote.getServiceState(serviceType);
             Set<Class<Command>> commandClasses;
             try {
@@ -202,12 +209,12 @@ public class UnitHandler extends BaseThingHandler {
                     }
                 } catch (TypeNotSupportedException | CouldNotTransformException ex) {
                     // skip transformation
-                    logger.info("Skip transformation of {} to command {}", serviceState, commandClass.getSimpleName());
+                    logger.warn("Skip transformation of {} to command {}", serviceState, commandClass.getSimpleName());
                 }
             }
         }
 
-        if (unitRemote instanceof LocationRemote) {
+        if (unitRemote instanceof LocationRemote && ((LocationRemote) unitRemote).getSupportedServiceTypes().contains(ServiceType.POWER_STATE_SERVICE)) {
             PowerStateOnOffTypeTransformer transformer = ServiceStateCommandTransformerPool.getInstance().getTransformer(PowerStateOnOffTypeTransformer.class);
             updateState(BCOBindingConstants.CHANNEL_POWER_LIGHT, transformer.transform(((LocationRemote) unitRemote).getPowerState(UnitType.LIGHT)));
         }
@@ -243,6 +250,18 @@ public class UnitHandler extends BaseThingHandler {
                 thingBuilder.withChannel(channel);
             } catch (NotAvailableException ex) {
                 logger.warn("Skip service {} of unit {} because item type not available", serviceType.name(), unitConfig.getAlias(0));
+            }
+        }
+
+        if (unitRemote instanceof LocationRemote) {
+            if (((LocationRemote) unitRemote).getSupportedServiceTypes().contains(ServiceType.POWER_STATE_SERVICE)) {
+                ChannelUID channelUID = new ChannelUID(getThing().getUID(), getChannelId(ServiceType.POWER_STATE_SERVICE) + "_light");
+                try {
+                    Channel channel = ChannelBuilder.create(channelUID, OpenHABItemProcessor.getItemType(ServiceType.POWER_STATE_SERVICE)).build();
+                    thingBuilder.withChannel(channel);
+                } catch (NotAvailableException ex) {
+                    // this should not happen
+                }
             }
         }
 

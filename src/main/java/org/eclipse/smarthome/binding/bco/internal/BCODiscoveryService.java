@@ -101,7 +101,7 @@ public class BCODiscoveryService extends AbstractDiscoveryService {
             }
 
             // ignore system users
-            if (unitConfig.getUnitType() == UnitType.USER && unitConfig.getUserConfig().getIsSystemUser()) {
+            if (unitConfig.getUnitType() == UnitType.USER && unitConfig.getUserConfig().getSystemUser()) {
                 continue;
             }
 

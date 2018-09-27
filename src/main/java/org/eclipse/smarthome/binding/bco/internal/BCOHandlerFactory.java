@@ -29,7 +29,16 @@ import org.eclipse.smarthome.core.thing.ThingTypeUID;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandlerFactory;
 import org.eclipse.smarthome.core.thing.binding.ThingHandler;
 import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPNotAvailableException;
+import org.openbase.jul.extension.rsb.com.jp.JPRSBHost;
+import org.openbase.jul.extension.rsb.com.jp.JPRSBPort;
+import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Dictionary;
 
 /**
  * The {@link BCOHandlerFactory} is responsible for creating things and thing
@@ -41,6 +50,8 @@ import org.osgi.service.component.annotations.Component;
 @Component(configurationPid = "binding.bco", service = ThingHandlerFactory.class)
 public class BCOHandlerFactory extends BaseThingHandlerFactory {
 
+    private final Logger logger = LoggerFactory.getLogger(BCOHandlerFactory.class);
+
     @Override
     public boolean supportsThingType(final ThingTypeUID thingTypeUID) {
         return BCOBindingConstants.THING_TYPES.contains(thingTypeUID);
@@ -49,5 +60,34 @@ public class BCOHandlerFactory extends BaseThingHandlerFactory {
     @Override
     protected @Nullable ThingHandler createHandler(final Thing thing) {
         return new UnitHandler(thing);
+    }
+
+    @Override
+    protected void activate(ComponentContext componentContext) {
+        super.activate(componentContext);
+
+        final Dictionary<String, Object> properties = componentContext.getProperties();
+        final Object rsbHost = properties.get("rsbHost");
+        if (rsbHost instanceof String) {
+            JPService.registerProperty(JPRSBHost.class, (String) rsbHost);
+        }
+
+        final Object rsbPort = properties.get("rsbPort");
+        if (rsbPort instanceof Integer) {
+            JPService.registerProperty(JPRSBPort.class, (Integer) rsbPort);
+        }
+
+        try {
+            logger.warn("Activate handler factory with host {} and port {}. In properties: {} and {}", rsbHost, rsbPort,
+                    JPService.getProperty(JPRSBHost.class).getValue(), JPService.getProperty(JPRSBPort.class).getValue());
+        } catch (JPNotAvailableException e) {
+            // do nothing
+        }
+    }
+
+    @Override
+    protected void deactivate(ComponentContext componentContext) {
+        super.deactivate(componentContext);
+        logger.warn("Deactivate handler factory");
     }
 }

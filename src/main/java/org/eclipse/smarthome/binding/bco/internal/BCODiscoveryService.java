@@ -132,6 +132,7 @@ public class BCODiscoveryService extends AbstractDiscoveryService {
 
     @Override
     protected void startBackgroundDiscovery() {
+        logger.info("Start background discovery");
         try {
             Registries.getUnitRegistry().addDataObserver(unitRegistryObserver);
         } catch (NotAvailableException ex) {
@@ -141,6 +142,7 @@ public class BCODiscoveryService extends AbstractDiscoveryService {
 
     @Override
     protected void stopBackgroundDiscovery() {
+        logger.info("Stop background discovery");
         try {
             Registries.getUnitRegistry().removeDataObserver(unitRegistryObserver);
         } catch (NotAvailableException ex) {

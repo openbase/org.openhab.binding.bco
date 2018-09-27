@@ -7,4 +7,18 @@
 	<description>This is the binding for BCO.</description>
 	<author>Tamino Huxohl</author>
 
+	<config-description>
+		<parameter name="rsbHost" type="text">
+			<label>RSB Host</label>
+			<description>The RSB host used by this binding. Per default this is localhost or the value defined in the file $Home/.config/rsb.conf</description>
+			<required>false</required>
+		</parameter>
+        <parameter name="rsbPort" type="integer">
+            <label>RSB Port</label>
+            <description>The RSB port used by this binding. Per default this is 4803 or the value defined in the file $Home/.config/rsb.conf</description>
+            <required>false</required>
+        </parameter>
+	</config-description>
+
+
 </binding:binding>

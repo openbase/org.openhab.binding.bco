@@ -21,4 +21,4 @@ mvn install \
         -Dlicense.skipCheckLicense=true \
         -Dmaven.license.skip=true \
         --quiet $@ &&
-echo -e "=== ${APP_NAME} was ${GREEN}successfully${NC} installed to ${WHITE}${prefix}${NC}"
+echo -e "=== ${APP_NAME} was ${GREEN}successfully${NC} installed."

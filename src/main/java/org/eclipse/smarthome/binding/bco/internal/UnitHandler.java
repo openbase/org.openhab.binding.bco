@@ -42,7 +42,7 @@ import org.openbase.bco.app.openhab.manager.transform.ServiceTypeCommandMapping;
 import org.openbase.bco.app.openhab.registry.synchronizer.OpenHABItemProcessor;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.lib.layer.service.Services;
-import org.openbase.bco.dal.lib.layer.unit.MultiUnitServiceFusion;
+import org.openbase.bco.dal.lib.layer.unit.MultiUnit;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
@@ -174,21 +174,7 @@ public class UnitHandler extends BaseThingHandler {
     }
 
     private void updateChannels() throws CouldNotPerformException {
-        final Set<ServiceType> serviceTypeSet;
-        if (unitRemote instanceof MultiUnitServiceFusion) {
-            serviceTypeSet = ((MultiUnitServiceFusion) unitRemote).getSupportedServiceTypes();
-        } else {
-            serviceTypeSet = new HashSet<>();
-            for (final ServiceDescription serviceDescription : unitRemote.getUnitTemplate().getServiceDescriptionList()) {
-                final ServiceType serviceType = serviceDescription.getServiceType();
-                if (serviceTypeSet.contains(serviceType)) {
-                    continue;
-                }
-                serviceTypeSet.add(serviceType);
-            }
-        }
-
-        for (final ServiceType serviceType : serviceTypeSet) {
+        for (final ServiceType serviceType : unitRemote.getAvailableServiceTypes()) {
             final Message serviceState = unitRemote.getServiceState(serviceType);
             Set<Class<Command>> commandClasses;
             try {
@@ -234,16 +220,7 @@ public class UnitHandler extends BaseThingHandler {
         // clear channels
         thingBuilder.withChannels();
         // add all channels
-        Set<ServiceType> serviceTypes = new HashSet<>();
-        if (unitRemote instanceof MultiUnitServiceFusion) {
-            serviceTypes = ((MultiUnitServiceFusion) unitRemote).getSupportedServiceTypes();
-        } else {
-            for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                serviceTypes.add(serviceConfig.getServiceDescription().getServiceType());
-            }
-        }
-
-        for (ServiceType serviceType : serviceTypes) {
+        for (ServiceType serviceType : unitRemote.getAvailableServiceTypes()) {
             ChannelUID channelUID = new ChannelUID(getThing().getUID(), getChannelId(serviceType));
             try {
                 Channel channel = ChannelBuilder.create(channelUID, OpenHABItemProcessor.getItemType(serviceType)).build();

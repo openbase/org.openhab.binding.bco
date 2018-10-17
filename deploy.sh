@@ -10,7 +10,7 @@ elif [ -r /etc/default/openhab2 ]; then
   . /etc/default/openhab2
 fi
 
-if [ ! -d "$ECLIPSE_SMARTHOME_HOME" ]; then
+if [ ! -d "$ECLIPSE_SMARTHOME_HOME" ] && [ -d "$OPENHAB_HOME" ]; then
     ECLIPSE_SMARTHOME_HOME=$OPENHAB_HOME
 fi
 
@@ -24,7 +24,12 @@ fi
 
 ADDONS_HOME=$ECLIPSE_SMARTHOME_HOME/addons
 
-#echo [INFO] deploy binding into $ECLIPSE_SMARTHOME_HOME ...
+if [ ! -d "$ADDONS_HOME" ]; then
+    # echo create missing addons folder...
+    mkdir -p $ADDONS_HOME
+fi
+
+# echo [INFO] deploy binding into $ECLIPSE_SMARTHOME_HOME ...
 if [ ! -w $ADDONS_HOME ] ; then
     echo "No permissions to deploy binding into $ADDONS_HOME"
     echo "Sudo password needed to adjust permissions for user $USER"

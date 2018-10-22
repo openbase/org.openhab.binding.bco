@@ -265,7 +265,7 @@
     <dependencies>
         <dependency>
             <groupId>org.openbase</groupId>
-            <artifactId>bco.app.openhab</artifactId>
+            <artifactId>bco.device.openhab</artifactId>
             <version>${dependency.bco.version}</version>
         </dependency>
         <dependency>

@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/org.eclipse.smarthome.binding.bco.iml" filepath="$PROJECT_DIR$/org.eclipse.smarthome.binding.bco.iml" />
-      <module fileurl="file://$PROJECT_DIR$/org.eclipse.smarthome.binding.bco.iml" filepath="$PROJECT_DIR$/org.eclipse.smarthome.binding.bco.iml" />
     </modules>
   </component>
 </project>

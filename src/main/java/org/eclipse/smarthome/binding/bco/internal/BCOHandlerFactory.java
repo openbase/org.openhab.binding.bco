@@ -67,7 +67,7 @@ public class BCOHandlerFactory extends BaseThingHandlerFactory {
         return new UnitHandler(thing);
     }
 
-    private boolean initialActivate = true;
+    private static boolean initialActivate = true;
 
     @Override
     protected void activate(ComponentContext componentContext) {
@@ -76,6 +76,7 @@ public class BCOHandlerFactory extends BaseThingHandlerFactory {
         try {
             final Integer oldPort = JPService.getProperty(JPRSBPort.class).getValue();
             final String oldHost = JPService.getProperty(JPRSBHost.class).getValue();
+            logger.info("OldHost {}, oldPort {}, initAct {}", oldHost, oldPort, initialActivate);
 
             final Dictionary<String, Object> properties = componentContext.getProperties();
             final Object rsbHost = properties.get("rsbHost");
@@ -103,6 +104,7 @@ public class BCOHandlerFactory extends BaseThingHandlerFactory {
                 return;
             }
 
+            logger.info("OldHost {}, oldPort {}, chH {}, chP {}", oldHost, oldPort, !oldPort.equals(newPort) || !oldHost.equals(newHost));
             if (!oldPort.equals(newPort) || !oldHost.equals(newHost)) {
                 logger.info("RSBHost changed from {} to {}", oldHost, newHost);
                 logger.info("RSBPort changed from {} to {}", oldPort, newPort);
@@ -111,7 +113,9 @@ public class BCOHandlerFactory extends BaseThingHandlerFactory {
                 RSBSharedConnectionConfig.reload();
 
                 try {
+                    logger.info("Reinit registries");
                     Registries.reinitialize();
+                    logger.info("Reinit units");
                     Units.reinitialize();
                 } catch (CouldNotPerformException ex) {
                     logger.error("Could not reinitialize remotes after host and/or port change!", ex);

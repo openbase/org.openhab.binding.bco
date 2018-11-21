@@ -10,12 +10,12 @@ package org.eclipse.smarthome.binding.bco.internal;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -94,7 +94,7 @@ public class BCODiscoveryService extends AbstractDiscoveryService {
 
     private List<UnitConfig> getHandledUnitConfigList() throws CouldNotPerformException {
         try {
-            Registries.getUnitRegistry().waitForData();
+            Registries.waitForData();
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             throw new CouldNotPerformException("Interrupted", ex);
@@ -139,24 +139,22 @@ public class BCODiscoveryService extends AbstractDiscoveryService {
     //TODO: re-activate if re-init works when changing host and port
     @Override
     protected void startBackgroundDiscovery() {
-
-
-//        logger.info("Start background discovery");
-//        try {
-//            Registries.getUnitRegistry().addDataObserver(unitRegistryObserver);
-//        } catch (NotAvailableException ex) {
-//            logger.warn("Could not start background discovery", ex);
-//        }
+        logger.info("Start background discovery");
+        try {
+            Registries.getUnitRegistry().addDataObserver(unitRegistryObserver);
+        } catch (NotAvailableException ex) {
+            logger.warn("Could not start background discovery", ex);
+        }
     }
 
     @Override
     protected void stopBackgroundDiscovery() {
-//        logger.info("Stop background discovery");
-//        try {
-//            Registries.getUnitRegistry().removeDataObserver(unitRegistryObserver);
-//        } catch (NotAvailableException ex) {
-//            logger.warn("Could not stop background discovery", ex);
-//        }
+        logger.info("Stop background discovery");
+        try {
+            Registries.getUnitRegistry().removeDataObserver(unitRegistryObserver);
+        } catch (NotAvailableException ex) {
+            logger.warn("Could not stop background discovery", ex);
+        }
     }
 
     private ThingUID getThingUID(final UnitConfig unitConfig) {

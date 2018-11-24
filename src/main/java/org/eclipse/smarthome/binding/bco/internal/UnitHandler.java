@@ -107,7 +107,7 @@ public class UnitHandler extends BaseThingHandler {
         //TODO: login, when yes which user?
         if (!SessionManager.getInstance().isLoggedIn()) {
             try {
-                BCOLogin.loginBCOUser();
+                SessionManager.getInstance().login(Registries.getUnitRegistry(true).getUserUnitIdByUserName("admin"), "admin");
             } catch (CouldNotPerformException | InterruptedException ex) {
                 logger.error("Could not login bco user", ex);
             }

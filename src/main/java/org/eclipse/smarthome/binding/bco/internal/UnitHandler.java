@@ -54,8 +54,8 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.TypeNotSupportedException;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.pattern.Remote;
-import org.openbase.jul.pattern.Remote.ConnectionState;
+import org.openbase.jul.pattern.controller.Remote;
+import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.service.ServiceConfigType.ServiceConfig;
@@ -78,7 +78,7 @@ public class UnitHandler extends BaseThingHandler {
 
     private final Logger logger = LoggerFactory.getLogger(UnitHandler.class);
 
-    private final Observer<Remote, ConnectionState> connectionStateObserver;
+    private final Observer<Remote, ConnectionState.State> connectionStateObserver;
     private final Observer unitDataObserver, unitConfigObserver;
 
     private UnitRemote<?> unitRemote;

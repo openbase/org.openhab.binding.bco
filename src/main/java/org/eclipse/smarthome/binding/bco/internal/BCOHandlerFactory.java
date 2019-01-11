@@ -29,15 +29,9 @@ import org.eclipse.smarthome.core.thing.ThingTypeUID;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandlerFactory;
 import org.eclipse.smarthome.core.thing.binding.ThingHandler;
 import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
-import org.openbase.bco.dal.remote.layer.unit.Units;
+import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPServiceException;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.extension.rsb.com.RSBDefaultConfig;
-import org.openbase.jul.extension.rsb.com.RSBSharedConnectionConfig;
-import org.openbase.jul.extension.rsb.com.jp.JPRSBHost;
-import org.openbase.jul.extension.rsb.com.jp.JPRSBPort;
+import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
@@ -73,59 +67,76 @@ public class BCOHandlerFactory extends BaseThingHandlerFactory {
     protected void activate(ComponentContext componentContext) {
         super.activate(componentContext);
 
-        try {
-            final Integer oldPort = JPService.getProperty(JPRSBPort.class).getValue();
-            final String oldHost = JPService.getProperty(JPRSBHost.class).getValue();
-            logger.info("OldHost {}, oldPort {}, initAct {}", oldHost, oldPort, initialActivate);
+        final Dictionary<String, Object> properties = componentContext.getProperties();
 
-            final Dictionary<String, Object> properties = componentContext.getProperties();
-            final Object rsbHost = properties.get("rsbHost");
-            if (rsbHost instanceof String) {
-                JPService.registerProperty(JPRSBHost.class, (String) rsbHost);
-            }
-
-            final Object rsbPort = properties.get("rsbPort");
-            if (rsbPort instanceof String) {
-                JPService.registerProperty(JPRSBPort.class, Integer.parseInt((String) rsbPort));
-            }
-            final String[] args = {};
-            JPService.parse(args);
-
-            final Integer newPort = JPService.getProperty(JPRSBPort.class).getValue();
-            final String newHost = JPService.getProperty(JPRSBHost.class).getValue();
-
-            //TODO: remove this when reactivate works
-            logger.info("Activate with RSBHost {} and RSBPort {}", newHost, newPort);
-            // do not perform re-init on initial start, only update properties
-            if(initialActivate) {
-                RSBDefaultConfig.reload();
-                RSBSharedConnectionConfig.reload();
-                initialActivate = false;
+        if (!SessionManager.getInstance().isLoggedIn()) {
+            Object credentials = properties.get("credentials");
+            if (!(credentials instanceof String)) {
+                logger.error("Credentials not available");
                 return;
             }
 
-            logger.info("OldHost {}, oldPort {}, chH {}, chP {}", oldHost, oldPort, !oldPort.equals(newPort) || !oldHost.equals(newHost));
-            if (!oldPort.equals(newPort) || !oldHost.equals(newHost)) {
-                logger.info("RSBHost changed from {} to {}", oldHost, newHost);
-                logger.info("RSBPort changed from {} to {}", oldPort, newPort);
-
-                RSBDefaultConfig.reload();
-                RSBSharedConnectionConfig.reload();
-
-                try {
-                    logger.info("Reinit registries");
-                    Registries.reinitialize();
-                    logger.info("Reinit units");
-                    Units.reinitialize();
-                } catch (CouldNotPerformException ex) {
-                    logger.error("Could not reinitialize remotes after host and/or port change!", ex);
-                } catch (InterruptedException ex) {
-                    Thread.currentThread().interrupt();
-                }
+            try {
+                Registries.waitForData();
+                SessionManager.getInstance().loginClient(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.OPENHAB_USER_ALIAS).getId(), (String) credentials);
+            } catch (Exception e) {
+                logger.error("Could not login as openhab user", e);
             }
-        } catch (JPServiceException ex) {
-            logger.error("Could not read or update JPProperty", ex);
         }
+
+        //TODO: reactivate if reinit works
+//        try {
+//            final Integer oldPort = JPService.getProperty(JPRSBPort.class).getValue();
+//            final String oldHost = JPService.getProperty(JPRSBHost.class).getValue();
+//            logger.info("OldHost {}, oldPort {}, initAct {}", oldHost, oldPort, initialActivate);
+//
+//            final Object rsbHost = properties.get("rsbHost");
+//            if (rsbHost instanceof String) {
+//                JPService.registerProperty(JPRSBHost.class, (String) rsbHost);
+//            }
+//
+//            final Object rsbPort = properties.get("rsbPort");
+//            if (rsbPort instanceof String) {
+//                JPService.registerProperty(JPRSBPort.class, Integer.parseInt((String) rsbPort));
+//            }
+//            final String[] args = {};
+//            JPService.parse(args);
+//
+//            final Integer newPort = JPService.getProperty(JPRSBPort.class).getValue();
+//            final String newHost = JPService.getProperty(JPRSBHost.class).getValue();
+//
+//            //TODO: remove this when reactivate works
+//            logger.info("Activate with RSBHost {} and RSBPort {}", newHost, newPort);
+//            // do not perform re-init on initial start, only update properties
+//            if (initialActivate) {
+//                RSBDefaultConfig.reload();
+//                RSBSharedConnectionConfig.reload();
+//                initialActivate = false;
+//                return;
+//            }
+//
+//            logger.info("OldHost {}, oldPort {}, chH {}, chP {}", oldHost, oldPort, !oldPort.equals(newPort) || !oldHost.equals(newHost));
+//            if (!oldPort.equals(newPort) || !oldHost.equals(newHost)) {
+//                logger.info("RSBHost changed from {} to {}", oldHost, newHost);
+//                logger.info("RSBPort changed from {} to {}", oldPort, newPort);
+//
+//                RSBDefaultConfig.reload();
+//                RSBSharedConnectionConfig.reload();
+//
+//                try {
+//                    logger.info("Reinit registries");
+//                    Registries.reinitialize();
+//                    logger.info("Reinit units");
+//                    Units.reinitialize();
+//                } catch (CouldNotPerformException ex) {
+//                    logger.error("Could not reinitialize remotes after host and/or port change!", ex);
+//                } catch (InterruptedException ex) {
+//                    Thread.currentThread().interrupt();
+//                }
+//            }
+//        } catch (JPServiceException ex) {
+//            logger.error("Could not read or update JPProperty", ex);
+//        }
     }
 
     @Override

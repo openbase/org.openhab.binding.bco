@@ -18,7 +18,11 @@
             <description>The RSB port used by this binding. Per default this is 4803 or the value defined in the file $Home/.config/rsb.conf</description>
             <required>false</required>
         </parameter>
-	</config-description>
-
+	    <parameter name="credentials" type="text">
+			<label>Credentials</label>
+			<description>The credentials of the openhab user in BCO. The binding will login in and apply actions as this user.</description>
+			<required>true</required>
+		</parameter>
+    </config-description>
 
 </binding:binding>

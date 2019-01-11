@@ -4,7 +4,7 @@ package org.eclipse.smarthome.binding.bco.internal;
  * #%L
  * BCO Binding
  * %%
- * Copyright (C) 2018 openbase.org
+ * Copyright (C) 2018 - 2019 openbase.org
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -35,11 +35,11 @@ import org.eclipse.smarthome.core.thing.binding.builder.ThingBuilder;
 import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.RefreshType;
 import org.eclipse.smarthome.core.types.State;
-import org.openbase.bco.app.openhab.manager.transform.PowerStateOnOffTypeTransformer;
-import org.openbase.bco.app.openhab.manager.transform.ServiceStateCommandTransformer;
-import org.openbase.bco.app.openhab.manager.transform.ServiceStateCommandTransformerPool;
-import org.openbase.bco.app.openhab.manager.transform.ServiceTypeCommandMapping;
-import org.openbase.bco.app.openhab.registry.synchronizer.OpenHABItemProcessor;
+import org.openbase.bco.device.openhab.manager.transform.PowerStateOnOffTypeTransformer;
+import org.openbase.bco.device.openhab.manager.transform.ServiceStateCommandTransformer;
+import org.openbase.bco.device.openhab.manager.transform.ServiceStateCommandTransformerPool;
+import org.openbase.bco.device.openhab.manager.transform.ServiceTypeCommandMapping;
+import org.openbase.bco.device.openhab.registry.synchronizer.OpenHABItemProcessor;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.MultiUnit;
@@ -52,17 +52,17 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.TypeNotSupportedException;
-import org.openbase.jul.extension.rst.processing.LabelProcessor;
+import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.pattern.Remote;
-import org.openbase.jul.pattern.Remote.ConnectionState;
+import org.openbase.jul.pattern.controller.Remote;
+import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.service.ServiceConfigType.ServiceConfig;
-import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.domotic.service.ServiceConfigType.ServiceConfig;
+import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -78,7 +78,7 @@ public class UnitHandler extends BaseThingHandler {
 
     private final Logger logger = LoggerFactory.getLogger(UnitHandler.class);
 
-    private final Observer<Remote, ConnectionState> connectionStateObserver;
+    private final Observer<Remote, ConnectionState.State> connectionStateObserver;
     private final Observer unitDataObserver, unitConfigObserver;
 
     private UnitRemote<?> unitRemote;
@@ -107,7 +107,7 @@ public class UnitHandler extends BaseThingHandler {
         //TODO: login, when yes which user?
         if (!SessionManager.getInstance().isLoggedIn()) {
             try {
-                BCOLogin.loginBCOUser();
+                SessionManager.getInstance().login(Registries.getUnitRegistry(true).getUserUnitIdByUserName("admin"), "admin");
             } catch (CouldNotPerformException | InterruptedException ex) {
                 logger.error("Could not login bco user", ex);
             }

@@ -36,6 +36,7 @@ import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.RefreshType;
 import org.eclipse.smarthome.core.types.State;
 import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
@@ -53,6 +54,7 @@ import org.openbase.jul.exception.TypeNotSupportedException;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.controller.Remote;
+import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
@@ -61,6 +63,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * The {@link UnitHandler} is responsible for handling commands, which are
@@ -99,14 +102,6 @@ public class UnitHandler extends BaseThingHandler {
     @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
         logger.debug("Receive command {} for channel {} of unit {}", command.getClass().getSimpleName(), channelUID.getId(), getThing().getUID().getId());
-        //TODO: login, when yes which user?
-        if (!SessionManager.getInstance().isLoggedIn()) {
-            try {
-                SessionManager.getInstance().login(Registries.getUnitRegistry(true).getUserUnitIdByUserName("admin"), "admin");
-            } catch (CouldNotPerformException | InterruptedException ex) {
-                logger.error("Could not login bco user", ex);
-            }
-        }
 
         if (command instanceof RefreshType) {
             //type is not supported
@@ -124,7 +119,10 @@ public class UnitHandler extends BaseThingHandler {
             }
 
             try {
-                Services.invokeOperationServiceMethod(serviceType, unitRemote, transformer.transform(command));
+                final ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(transformer.transform(command), serviceType, unitRemote);
+                actionParameter.setExecutionTimePeriod(TimeUnit.MINUTES.toMicros(30));
+                unitRemote.applyAction(actionParameter);
+                //Services.invokeOperationServiceMethod(serviceType, unitRemote, transformer.transform(command));
             } catch (CouldNotPerformException ex) {
                 logger.warn("Could not update channel {} to value {}", channelUID, command, ex);
                 try {

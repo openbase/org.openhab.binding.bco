@@ -32,6 +32,8 @@ import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
@@ -70,17 +72,22 @@ public class BCOHandlerFactory extends BaseThingHandlerFactory {
         final Dictionary<String, Object> properties = componentContext.getProperties();
 
         if (!SessionManager.getInstance().isLoggedIn()) {
-            Object credentials = properties.get("credentials");
-            if (!(credentials instanceof String)) {
-                logger.error("Credentials not available");
-                return;
-            }
-
             try {
+                Object credentials = properties.get("credentials");
+                if (!(credentials instanceof String)) {
+                    throw new NotAvailableException("Credentials");
+                }
                 Registries.waitForData();
                 SessionManager.getInstance().loginClient(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.OPENHAB_USER_ALIAS).getId(), (String) credentials);
             } catch (Exception e) {
                 logger.error("Could not login as openhab user", e);
+                if (!SessionManager.getInstance().isLoggedIn()) {
+                    try {
+                        SessionManager.getInstance().login(Registries.getUnitRegistry(true).getUserUnitIdByUserName("admin"), "admin");
+                    } catch (CouldNotPerformException | InterruptedException ex) {
+                        logger.error("Could not login admin", ex);
+                    }
+                }
             }
         }
 

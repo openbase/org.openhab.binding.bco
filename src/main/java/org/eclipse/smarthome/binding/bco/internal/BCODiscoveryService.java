@@ -64,7 +64,7 @@ public class BCODiscoveryService extends AbstractDiscoveryService {
         diff = new ProtobufListDiff<>();
         unitRegistryObserver = (observable, unitRegistryData) -> {
             try {
-                diff.diff(getHandledUnitConfigList());
+                diff.diffMessages(getHandledUnitConfigList());
 
                 // add new units to discovery
                 for (final UnitConfig unitConfig : diff.getNewMessageMap().getMessages()) {

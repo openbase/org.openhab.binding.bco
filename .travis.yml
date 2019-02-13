@@ -14,9 +14,10 @@ jdk:
 install:
   - mvn --settings .travis/settings.xml install -DskipTests=true -Dmaven.javadoc.skip=true -B -U -V -q
 
-before_install:
-  - echo $GPG_SECRET_KEYS | base64 --decode | $GPG_EXECUTABLE --import
-  - echo $GPG_OWNERTRUST | base64 --decode | $GPG_EXECUTABLE --import-ownertrust
+### deployment disabled
+# before_install:
+#   - echo $GPG_SECRET_KEYS | base64 --decode | $GPG_EXECUTABLE --import
+#   - echo $GPG_OWNERTRUST | base64 --decode | $GPG_EXECUTABLE --import-ownertrust
 
 notifications:
     email:

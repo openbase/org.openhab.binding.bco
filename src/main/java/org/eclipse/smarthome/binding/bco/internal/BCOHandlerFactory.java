@@ -83,7 +83,7 @@ public class BCOHandlerFactory extends BaseThingHandlerFactory {
                 logger.error("Could not login as openhab user", e);
                 if (!SessionManager.getInstance().isLoggedIn()) {
                     try {
-                        SessionManager.getInstance().login(Registries.getUnitRegistry(true).getUserUnitIdByUserName("admin"), "admin");
+                        SessionManager.getInstance().login(Registries.getUnitRegistry(true).getUserUnitIdByUserName("admin"), "admin", true);
                     } catch (CouldNotPerformException | InterruptedException ex) {
                         logger.error("Could not login admin", ex);
                     }

@@ -78,26 +78,6 @@ public class BCOHandlerFactory extends BaseThingHandlerFactory {
 
         final Dictionary<String, Object> properties = componentContext.getProperties();
 
-        if (!SessionManager.getInstance().isLoggedIn()) {
-            try {
-                Object credentials = properties.get("credentials");
-                if (!(credentials instanceof String)) {
-                    throw new NotAvailableException("Credentials");
-                }
-                Registries.waitForData();
-                SessionManager.getInstance().loginClient(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.OPENHAB_USER_ALIAS).getId(), (String) credentials);
-            } catch (Exception e) {
-                logger.error("Could not login as openhab user", e);
-                if (!SessionManager.getInstance().isLoggedIn()) {
-                    try {
-                        SessionManager.getInstance().login(Registries.getUnitRegistry(true).getUserUnitIdByUserName("admin"), "admin", true);
-                    } catch (CouldNotPerformException | InterruptedException ex) {
-                        logger.error("Could not login admin", ex);
-                    }
-                }
-            }
-        }
-
         try {
             final Integer oldPort = JPService.getProperty(JPRSBPort.class).getValue();
             final String oldHost = JPService.getProperty(JPRSBHost.class).getValue();
@@ -110,8 +90,8 @@ public class BCOHandlerFactory extends BaseThingHandlerFactory {
 
             }
 
-            //final Object rsbPort = properties.get("rsbport");
-            final Object rsbPort = "4814";
+            final Object rsbPort = properties.get("rsbport");
+            //final Object rsbPort = "4814";
             if (rsbPort instanceof String) {
                 JPService.registerProperty(JPRSBPort.class, Integer.parseInt((String) rsbPort));
                 JPService.getProperty(JPRSBPort.class).update(Integer.parseInt((String) rsbPort));
@@ -150,6 +130,19 @@ public class BCOHandlerFactory extends BaseThingHandlerFactory {
                     logger.error("Could not reinitialize remotes after host and/or port change!", ex);
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
+                }
+            }
+
+            if (!SessionManager.getInstance().isLoggedIn()) {
+                try {
+                    Object credentials = properties.get("credentials");
+                    if (!(credentials instanceof String)) {
+                        throw new NotAvailableException("Credentials");
+                    }
+                    Registries.waitForData();
+                    SessionManager.getInstance().loginClient(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.OPENHAB_USER_ALIAS).getId(), (String) credentials);
+                } catch (Exception ex) {
+                    logger.error("Could not login as openhab user", ex);
                 }
             }
         } catch (JPServiceException ex) {

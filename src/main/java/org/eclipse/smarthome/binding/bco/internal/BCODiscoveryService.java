@@ -157,25 +157,25 @@ public class BCODiscoveryService extends AbstractDiscoveryService {
     }
 
     //TODO: re-activate if re-init works when changing host and port
-    @Override
-    protected void startBackgroundDiscovery() {
-        logger.info("Start background discovery");
-        try {
-            Registries.getUnitRegistry().addDataObserver(unitRegistryObserver);
-        } catch (NotAvailableException ex) {
-            logger.warn("Could not start background discovery", ex);
-        }
-    }
-
-    @Override
-    protected void stopBackgroundDiscovery() {
-        logger.info("Stop background discovery");
-        try {
-            Registries.getUnitRegistry().removeDataObserver(unitRegistryObserver);
-        } catch (NotAvailableException ex) {
-            logger.warn("Could not stop background discovery", ex);
-        }
-    }
+//    @Override
+//    protected void startBackgroundDiscovery() {
+//        logger.info("Start background discovery");
+//        try {
+//            Registries.getUnitRegistry().addDataObserver(unitRegistryObserver);
+//        } catch (NotAvailableException ex) {
+//            logger.warn("Could not start background discovery", ex);
+//        }
+//    }
+//
+//    @Override
+//    protected void stopBackgroundDiscovery() {
+//        logger.info("Stop background discovery");
+//        try {
+//            Registries.getUnitRegistry().removeDataObserver(unitRegistryObserver);
+//        } catch (NotAvailableException ex) {
+//            logger.warn("Could not stop background discovery", ex);
+//        }
+//    }
 
     private ThingUID getThingUID(final UnitConfig unitConfig) {
         return new ThingUID(new ThingTypeUID(BCOBindingConstants.BINDING_ID, BCOBindingConstants.UNIT_THING_TYPE), unitConfig.getId());

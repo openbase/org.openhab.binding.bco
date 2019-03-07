@@ -103,14 +103,14 @@ public class BCOHandlerFactory extends BaseThingHandlerFactory {
             final String oldHost = JPService.getProperty(JPRSBHost.class).getValue();
             logger.info("OldHost {}, oldPort {}, initAct {}", oldHost, oldPort, initialActivate);
 
-            final Object rsbHost = properties.get("rsbHost");
+            final Object rsbHost = properties.get("rsbhost");
             if (rsbHost instanceof String) {
                 JPService.registerProperty(JPRSBHost.class, (String) rsbHost);
                 JPService.getProperty(JPRSBHost.class).update((String) rsbHost);
 
             }
 
-            final Object rsbPort = properties.get("rsbPort");
+            final Object rsbPort = properties.get("rsbport");
             if (rsbPort instanceof String) {
                 JPService.registerProperty(JPRSBPort.class, Integer.parseInt((String) rsbPort));
                 JPService.getProperty(JPRSBPort.class).update(Integer.parseInt((String) rsbPort));

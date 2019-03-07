@@ -35,6 +35,7 @@ import org.openbase.jul.extension.protobuf.ProtobufListDiff;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +46,7 @@ import org.openbase.type.domotic.unit.device.DeviceClassType.DeviceClass;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Future;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -81,15 +83,33 @@ public class BCODiscoveryService extends AbstractDiscoveryService {
         };
     }
 
+    private Future<Void> discoveryTask;
+
     @Override
     protected void startScan() {
-        try {
-            for (final UnitConfig unitConfig : getHandledUnitConfigList()) {
-                thingDiscovered(getDiscoveryResult(unitConfig));
-            }
-        } catch (CouldNotPerformException ex) {
-            logger.error("Could not scan for BCO things", ex);
+
+        if(discoveryTask !=null && !discoveryTask.isDone()) {
+            logger.info("Discovery still running, skip request...");
+            return;
         }
+
+        discoveryTask = GlobalCachedExecutorService.submit(() -> {
+            try {
+                for (final UnitConfig unitConfig : getHandledUnitConfigList()) {
+                    thingDiscovered(getDiscoveryResult(unitConfig));
+                }
+            } catch (CouldNotPerformException ex) {
+                logger.error("Could not scan for BCO things", ex);
+            }
+            return null;
+        });
+    }
+
+    @Override
+    protected synchronized void stopScan() {
+        discoveryTask.cancel(true);
+        discoveryTask = null;
+        super.stopScan();
     }
 
     private List<UnitConfig> getHandledUnitConfigList() throws CouldNotPerformException {

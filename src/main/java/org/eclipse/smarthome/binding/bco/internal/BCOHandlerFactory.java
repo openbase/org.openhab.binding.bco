@@ -110,7 +110,8 @@ public class BCOHandlerFactory extends BaseThingHandlerFactory {
 
             }
 
-            final Object rsbPort = properties.get("rsbport");
+            //final Object rsbPort = properties.get("rsbport");
+            final Object rsbPort = "4814";
             if (rsbPort instanceof String) {
                 JPService.registerProperty(JPRSBPort.class, Integer.parseInt((String) rsbPort));
                 JPService.getProperty(JPRSBPort.class).update(Integer.parseInt((String) rsbPort));

@@ -132,7 +132,7 @@ public class BCOHandlerFactory extends BaseThingHandlerFactory {
                     Thread.currentThread().interrupt();
                 }
             }
-
+            
             if (!SessionManager.getInstance().isLoggedIn()) {
                 try {
                     Object credentials = properties.get("credentials");
@@ -141,10 +141,19 @@ public class BCOHandlerFactory extends BaseThingHandlerFactory {
                     }
                     Registries.waitForData();
                     SessionManager.getInstance().loginClient(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.OPENHAB_USER_ALIAS).getId(), (String) credentials);
-                } catch (Exception ex) {
-                    logger.error("Could not login as openhab user", ex);
+                } catch (Exception e) {
+                    logger.error("Could not login as openhab user", e);
+                    if (!SessionManager.getInstance().isLoggedIn()) {
+                        try {
+                            SessionManager.getInstance().login(Registries.getUnitRegistry(true).getUserUnitIdByUserName("admin"), "admin", true);
+                        } catch (CouldNotPerformException | InterruptedException ex) {
+                            logger.error("Could not login admin", ex);
+                        }
+                    }
                 }
             }
+
+
         } catch (JPServiceException ex) {
             logger.error("Could not read or update JPProperty", ex);
         }

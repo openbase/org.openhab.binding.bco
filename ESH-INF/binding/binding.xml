@@ -1,28 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <binding:binding id="bco" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:binding="http://eclipse.org/smarthome/schemas/binding/v1.0.0"
-	xsi:schemaLocation="http://eclipse.org/smarthome/schemas/binding/v1.0.0 http://eclipse.org/smarthome/schemas/binding-1.0.0.xsd">
+                 xmlns:binding="http://eclipse.org/smarthome/schemas/binding/v1.0.0"
+                 xsi:schemaLocation="http://eclipse.org/smarthome/schemas/binding/v1.0.0 http://eclipse.org/smarthome/schemas/binding-1.0.0.xsd">
 
-	<name>BCO Binding</name>
-	<description>This binding can be used to connect openHAB with BaseCubeOne.</description>
-	<author>Tamino Huxohl (openbase.org)</author>
+    <name>BCO Binding</name>
+    <description>This binding can be used to connect openHAB with BaseCubeOne.</description>
+    <author>Tamino Huxohl (openbase.org)</author>
 
-	<config-description>
-		<parameter name="rsbhost" type="text">
-			<label>RSB Host</label>
-			<description>The RSB host used by this binding. Per default this is localhost or the value defined in the file $Home/.config/rsb.conf</description>
-			<required>false</required>
-		</parameter>
-        <parameter name="rsbport" type="integer">
-            <label>RSB Port</label>
-            <description>The RSB port used by this binding. Per default this is 4803 or the value defined in the file $Home/.config/rsb.conf</description>
+    <config-description>
+        <parameter name="rsbHost" type="text">
+            <label>RSB Host</label>
+            <description>The RSB host used by this binding. Per default this is localhost or the value defined in the
+                file $Home/.config/rsb.conf
+            </description>
             <required>false</required>
         </parameter>
-	    <parameter name="credentials" type="text">
-			<label>Credentials</label>
-			<description>The credentials of the openhab user in BCO. The binding will login in and apply actions as this user.</description>
-			<required>true</required>
-		</parameter>
+        <parameter name="rsbPort" type="integer">
+            <label>RSB Port</label>
+            <description>The RSB port used by this binding. Per default this is 4803 or the value defined in the file
+                $Home/.config/rsb.conf
+            </description>
+            <required>false</required>
+        </parameter>
+        <parameter name="credentials" type="text">
+            <label>Credentials</label>
+            <description>The credentials of the openhab user in BCO. The binding will login in and apply actions as this
+                user.
+            </description>
+            <required>true</required>
+        </parameter>
     </config-description>
 
 </binding:binding>

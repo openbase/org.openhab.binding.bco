@@ -83,15 +83,14 @@ public class BCOHandlerFactory extends BaseThingHandlerFactory {
             final String oldHost = JPService.getProperty(JPRSBHost.class).getValue();
             logger.info("OldHost {}, oldPort {}, initAct {}", oldHost, oldPort, initialActivate);
 
-            final Object rsbHost = properties.get("rsbhost");
+            final Object rsbHost = properties.get("rsbHost");
             if (rsbHost instanceof String) {
                 JPService.registerProperty(JPRSBHost.class, (String) rsbHost);
                 JPService.getProperty(JPRSBHost.class).update((String) rsbHost);
 
             }
 
-            final Object rsbPort = properties.get("rsbport");
-            //final Object rsbPort = "4814";
+            final Object rsbPort = properties.get("rsbPort");
             if (rsbPort instanceof String) {
                 JPService.registerProperty(JPRSBPort.class, Integer.parseInt((String) rsbPort));
                 JPService.getProperty(JPRSBPort.class).update(Integer.parseInt((String) rsbPort));
@@ -102,18 +101,7 @@ public class BCOHandlerFactory extends BaseThingHandlerFactory {
             final Integer newPort = JPService.getProperty(JPRSBPort.class).getValue();
             final String newHost = JPService.getProperty(JPRSBHost.class).getValue();
 
-            //TODO: remove this when reactivate works
             logger.info("Activate with RSBHost {} and RSBPort {}", newHost, newPort);
-
-            // do not perform re-init on initial start, only update properties
-            if (initialActivate) {
-                RSBDefaultConfig.reload();
-                RSBSharedConnectionConfig.reload();
-                initialActivate = false;
-                return;
-            }
-
-            logger.info("OldHost {}, oldPort {}, chH {}, chP {}", oldHost, oldPort, !oldPort.equals(newPort) || !oldHost.equals(newHost));
             if (!oldPort.equals(newPort) || !oldHost.equals(newHost)) {
                 logger.info("RSBHost changed from {} to {}", oldHost, newHost);
                 logger.info("RSBPort changed from {} to {}", oldPort, newPort);
@@ -121,15 +109,22 @@ public class BCOHandlerFactory extends BaseThingHandlerFactory {
                 RSBDefaultConfig.reload();
                 RSBSharedConnectionConfig.reload();
 
-                try {
-                    logger.info("Reinit registries");
-                    Registries.reinitialize();
-                    logger.info("Reinit units");
-                    Units.reinitialize();
-                } catch (CouldNotPerformException ex) {
-                    logger.error("Could not reinitialize remotes after host and/or port change!", ex);
-                } catch (InterruptedException ex) {
-                    Thread.currentThread().interrupt();
+                // do not perform re-init on initial start because there is no need for it.
+                if (!initialActivate) {
+                    // enable when reconnect works
+//                    try {
+//                        logger.info("Reinit registries");
+//                        Registries.reinitialize();
+//                        logger.info("Reinit units");
+//                        Units.reinitialize();
+//                    } catch (CouldNotPerformException ex) {
+//                        logger.error("Could not reinitialize remotes after host and/or port change!", ex);
+//                    } catch (InterruptedException ex) {
+//                        Thread.currentThread().interrupt();
+//                    }
+
+                } else {
+                    initialActivate = false;
                 }
             }
             

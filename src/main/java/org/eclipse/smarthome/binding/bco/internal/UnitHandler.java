@@ -51,6 +51,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.TypeNotSupportedException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.controller.Remote;
@@ -137,6 +138,8 @@ public class UnitHandler extends BaseThingHandler {
             try {
                 if (channelUID.getId().equalsIgnoreCase(BCOBindingConstants.CHANNEL_POWER_LIGHT)) {
                     PowerStateOnOffTypeTransformer transformer = ServiceStateCommandTransformerPool.getInstance().getTransformer(PowerStateOnOffTypeTransformer.class);
+
+                    // todo setup execution time
                     ((LocationRemote) unitRemote).setPowerState(transformer.transform((OnOffType) command), UnitType.LIGHT);
                 } else {
                     logger.error("Receive command for unknown channel {}", channelUID.getId());
@@ -193,7 +196,7 @@ public class UnitHandler extends BaseThingHandler {
             }
         }
 
-        if (unitRemote instanceof LocationRemote && ((LocationRemote) unitRemote).getSupportedServiceTypes().contains(ServiceType.POWER_STATE_SERVICE)) {
+        if (unitRemote instanceof LocationRemote && unitRemote.getAvailableServiceTypes().contains(ServiceType.POWER_STATE_SERVICE)) {
             PowerStateOnOffTypeTransformer transformer = ServiceStateCommandTransformerPool.getInstance().getTransformer(PowerStateOnOffTypeTransformer.class);
             updateState(BCOBindingConstants.CHANNEL_POWER_LIGHT, transformer.transform(((LocationRemote) unitRemote).getPowerState(UnitType.LIGHT)));
         }
@@ -205,6 +208,7 @@ public class UnitHandler extends BaseThingHandler {
 
         // update thing label
         thingBuilder.withLabel(unitRemote.getLabel());
+
         // update thing location
         UnitConfig location = Registries.getUnitRegistry().getUnitConfigById(unitConfig.getPlacementConfig().getLocationId());
         thingBuilder.withLocation(LabelProcessor.getBestMatch(location.getLabel()));
@@ -223,14 +227,16 @@ public class UnitHandler extends BaseThingHandler {
             }
         }
 
-        if (unitRemote instanceof LocationRemote) {
-            if (((LocationRemote) unitRemote).getSupportedServiceTypes().contains(ServiceType.POWER_STATE_SERVICE)) {
+        // add custom location channels
+        if (unitRemote.getUnitType() == UnitType.LOCATION) {
+            if (unitRemote.getAvailableServiceTypes().contains(ServiceType.POWER_STATE_SERVICE)) {
                 ChannelUID channelUID = new ChannelUID(getThing().getUID(), getChannelId(ServiceType.POWER_STATE_SERVICE) + "_light");
                 try {
                     Channel channel = ChannelBuilder.create(channelUID, OpenHABItemProcessor.getItemType(ServiceType.POWER_STATE_SERVICE)).build();
                     thingBuilder.withChannel(channel);
                 } catch (NotAvailableException ex) {
                     // this should not happen
+                    ExceptionPrinter.printHistory("Could no create light control channel of location.", ex , logger);
                 }
             }
         }

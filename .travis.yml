@@ -2,10 +2,6 @@ language: java
 
 dist: xenial
 
-branches:
-  except:
-      #- /^(?i:feature)-.*$/
-      #- /^(?i:release)-.*$/
 jdk:
   - openjdk8
   - openjdk11

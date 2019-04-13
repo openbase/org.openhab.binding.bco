@@ -22,6 +22,7 @@ package org.eclipse.smarthome.binding.bco.internal;
  * #L%
  */
 
+import com.google.protobuf.ByteString;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.smarthome.core.thing.Thing;
@@ -32,11 +33,13 @@ import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
+import org.openbase.type.domotic.authentication.LoginCredentialsType.LoginCredentials;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Base64;
 import java.util.Dictionary;
 
 /**
@@ -78,7 +81,13 @@ public class BCOHandlerFactory extends BaseThingHandlerFactory {
 
             try {
                 Registries.waitForData();
-                SessionManager.getInstance().loginClient(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.OPENHAB_USER_ALIAS).getId(), (String) credentials);
+                LoginCredentials loginCredentials = LoginCredentials.newBuilder()
+                        .setId(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.OPENHAB_USER_ALIAS).getId())
+                        .setSymmetric(false)
+                        .setAdmin(false)
+                        .setCredentials(ByteString.copyFrom(Base64.getDecoder().decode((String) credentials)))
+                        .build();
+                SessionManager.getInstance().loginClient(loginCredentials.getId(), loginCredentials, true);
             } catch (Exception e) {
                 logger.error("Could not login as openhab user", e);
             }

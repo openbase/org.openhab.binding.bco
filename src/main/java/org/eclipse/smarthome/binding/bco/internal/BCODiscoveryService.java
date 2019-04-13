@@ -35,6 +35,7 @@ import org.openbase.jul.extension.protobuf.ProtobufListDiff;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +46,7 @@ import org.openbase.type.domotic.unit.device.DeviceClassType.DeviceClass;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Future;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -64,7 +66,7 @@ public class BCODiscoveryService extends AbstractDiscoveryService {
         diff = new ProtobufListDiff<>();
         unitRegistryObserver = (observable, unitRegistryData) -> {
             try {
-                diff.diff(getHandledUnitConfigList());
+                diff.diffMessages(getHandledUnitConfigList());
 
                 // add new units to discovery
                 for (final UnitConfig unitConfig : diff.getNewMessageMap().getMessages()) {
@@ -81,15 +83,33 @@ public class BCODiscoveryService extends AbstractDiscoveryService {
         };
     }
 
+    private Future<Void> discoveryTask;
+
     @Override
     protected void startScan() {
-        try {
-            for (final UnitConfig unitConfig : getHandledUnitConfigList()) {
-                thingDiscovered(getDiscoveryResult(unitConfig));
-            }
-        } catch (CouldNotPerformException ex) {
-            logger.error("Could not scan for BCO things", ex);
+
+        if(discoveryTask !=null && !discoveryTask.isDone()) {
+            logger.info("Discovery still running, skip request...");
+            return;
         }
+
+        discoveryTask = GlobalCachedExecutorService.submit(() -> {
+            try {
+                for (final UnitConfig unitConfig : getHandledUnitConfigList()) {
+                    thingDiscovered(getDiscoveryResult(unitConfig));
+                }
+            } catch (CouldNotPerformException ex) {
+                logger.error("Could not scan for BCO things", ex);
+            }
+            return null;
+        });
+    }
+
+    @Override
+    protected synchronized void stopScan() {
+        discoveryTask.cancel(true);
+        discoveryTask = null;
+        super.stopScan();
     }
 
     private List<UnitConfig> getHandledUnitConfigList() throws CouldNotPerformException {
@@ -137,25 +157,25 @@ public class BCODiscoveryService extends AbstractDiscoveryService {
     }
 
     //TODO: re-activate if re-init works when changing host and port
-    @Override
-    protected void startBackgroundDiscovery() {
-        logger.info("Start background discovery");
-        try {
-            Registries.getUnitRegistry().addDataObserver(unitRegistryObserver);
-        } catch (NotAvailableException ex) {
-            logger.warn("Could not start background discovery", ex);
-        }
-    }
-
-    @Override
-    protected void stopBackgroundDiscovery() {
-        logger.info("Stop background discovery");
-        try {
-            Registries.getUnitRegistry().removeDataObserver(unitRegistryObserver);
-        } catch (NotAvailableException ex) {
-            logger.warn("Could not stop background discovery", ex);
-        }
-    }
+//    @Override
+//    protected void startBackgroundDiscovery() {
+//        logger.info("Start background discovery");
+//        try {
+//            Registries.getUnitRegistry().addDataObserver(unitRegistryObserver);
+//        } catch (NotAvailableException ex) {
+//            logger.warn("Could not start background discovery", ex);
+//        }
+//    }
+//
+//    @Override
+//    protected void stopBackgroundDiscovery() {
+//        logger.info("Stop background discovery");
+//        try {
+//            Registries.getUnitRegistry().removeDataObserver(unitRegistryObserver);
+//        } catch (NotAvailableException ex) {
+//            logger.warn("Could not stop background discovery", ex);
+//        }
+//    }
 
     private ThingUID getThingUID(final UnitConfig unitConfig) {
         return new ThingUID(new ThingTypeUID(BCOBindingConstants.BINDING_ID, BCOBindingConstants.UNIT_THING_TYPE), unitConfig.getId());

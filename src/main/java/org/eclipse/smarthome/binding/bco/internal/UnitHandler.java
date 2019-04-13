@@ -35,7 +35,7 @@ import org.eclipse.smarthome.core.thing.binding.builder.ThingBuilder;
 import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.RefreshType;
 import org.eclipse.smarthome.core.types.State;
-import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
@@ -50,9 +50,11 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.TypeNotSupportedException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.controller.Remote;
+import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
@@ -61,6 +63,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * The {@link UnitHandler} is responsible for handling commands, which are
@@ -99,14 +102,6 @@ public class UnitHandler extends BaseThingHandler {
     @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
         logger.debug("Receive command {} for channel {} of unit {}", command.getClass().getSimpleName(), channelUID.getId(), getThing().getUID().getId());
-        //TODO: login, when yes which user?
-        if (!SessionManager.getInstance().isLoggedIn()) {
-            try {
-                SessionManager.getInstance().login(Registries.getUnitRegistry(true).getUserUnitIdByUserName("admin"), "admin");
-            } catch (CouldNotPerformException | InterruptedException ex) {
-                logger.error("Could not login bco user", ex);
-            }
-        }
 
         if (command instanceof RefreshType) {
             //type is not supported
@@ -124,7 +119,10 @@ public class UnitHandler extends BaseThingHandler {
             }
 
             try {
-                Services.invokeOperationServiceMethod(serviceType, unitRemote, transformer.transform(command));
+                final ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(transformer.transform(command), serviceType, unitRemote);
+                actionParameter.setExecutionTimePeriod(TimeUnit.MINUTES.toMicros(30));
+                unitRemote.applyAction(actionParameter);
+                //Services.invokeOperationServiceMethod(serviceType, unitRemote, transformer.transform(command));
             } catch (CouldNotPerformException ex) {
                 logger.warn("Could not update channel {} to value {}", channelUID, command, ex);
                 try {
@@ -139,6 +137,8 @@ public class UnitHandler extends BaseThingHandler {
             try {
                 if (channelUID.getId().equalsIgnoreCase(BCOBindingConstants.CHANNEL_POWER_LIGHT)) {
                     PowerStateOnOffTypeTransformer transformer = ServiceStateCommandTransformerPool.getInstance().getTransformer(PowerStateOnOffTypeTransformer.class);
+
+                    // todo setup execution time
                     ((LocationRemote) unitRemote).setPowerState(transformer.transform((OnOffType) command), UnitType.LIGHT);
                 } else {
                     logger.error("Receive command for unknown channel {}", channelUID.getId());
@@ -195,7 +195,7 @@ public class UnitHandler extends BaseThingHandler {
             }
         }
 
-        if (unitRemote instanceof LocationRemote && ((LocationRemote) unitRemote).getSupportedServiceTypes().contains(ServiceType.POWER_STATE_SERVICE)) {
+        if (unitRemote instanceof LocationRemote && unitRemote.getAvailableServiceTypes().contains(ServiceType.POWER_STATE_SERVICE)) {
             PowerStateOnOffTypeTransformer transformer = ServiceStateCommandTransformerPool.getInstance().getTransformer(PowerStateOnOffTypeTransformer.class);
             updateState(BCOBindingConstants.CHANNEL_POWER_LIGHT, transformer.transform(((LocationRemote) unitRemote).getPowerState(UnitType.LIGHT)));
         }
@@ -207,6 +207,7 @@ public class UnitHandler extends BaseThingHandler {
 
         // update thing label
         thingBuilder.withLabel(unitRemote.getLabel());
+
         // update thing location
         UnitConfig location = Registries.getUnitRegistry().getUnitConfigById(unitConfig.getPlacementConfig().getLocationId());
         thingBuilder.withLocation(LabelProcessor.getBestMatch(location.getLabel()));
@@ -225,14 +226,16 @@ public class UnitHandler extends BaseThingHandler {
             }
         }
 
-        if (unitRemote instanceof LocationRemote) {
-            if (((LocationRemote) unitRemote).getSupportedServiceTypes().contains(ServiceType.POWER_STATE_SERVICE)) {
+        // add custom location channels
+        if (unitRemote.getUnitType() == UnitType.LOCATION) {
+            if (unitRemote.getAvailableServiceTypes().contains(ServiceType.POWER_STATE_SERVICE)) {
                 ChannelUID channelUID = new ChannelUID(getThing().getUID(), getChannelId(ServiceType.POWER_STATE_SERVICE) + "_light");
                 try {
                     Channel channel = ChannelBuilder.create(channelUID, OpenHABItemProcessor.getItemType(ServiceType.POWER_STATE_SERVICE)).build();
                     thingBuilder.withChannel(channel);
                 } catch (NotAvailableException ex) {
                     // this should not happen
+                    ExceptionPrinter.printHistory("Could no create light control channel of location.", ex , logger);
                 }
             }
         }

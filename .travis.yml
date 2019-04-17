@@ -22,9 +22,9 @@ install:
 script:
   - mvn test -Dmaven.javadoc.skip=true --batch-mode --fail-fast # --quiet
 
-before_install:
-  - echo $GPG_SECRET_KEYS | base64 --decode | $GPG_EXECUTABLE --import
-  - echo $GPG_OWNERTRUST | base64 --decode | $GPG_EXECUTABLE --import-ownertrust
+#before_install:
+#  - echo $GPG_SECRET_KEYS | base64 --decode | $GPG_EXECUTABLE --import
+#  - echo $GPG_OWNERTRUST | base64 --decode | $GPG_EXECUTABLE --import-ownertrust
 
 notifications:
     email:

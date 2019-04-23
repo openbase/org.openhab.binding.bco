@@ -32,6 +32,7 @@ import org.eclipse.smarthome.core.thing.binding.ThingHandler;
 import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
@@ -147,10 +148,10 @@ public class BCOHandlerFactory extends BaseThingHandlerFactory {
                     SessionManager.getInstance().loginClient(loginCredentials.getId(), loginCredentials, true);
                 } catch (Exception e) {
                     logger.error("Could not login as openhab user", e);
-                    if (!SessionManager.getInstance().isLoggedIn()) {
+                    if (!BCOLogin.getSession().isLoggedIn()) {
                         try {
-                            SessionManager.getInstance().loginUser(Registries.getUnitRegistry(true).getUserUnitIdByUserName("admin"), "admin", true);
-                        } catch (CouldNotPerformException | InterruptedException ex) {
+                            BCOLogin.getSession().loginUserViaUsername("admin", "admin", true);
+                        } catch (CouldNotPerformException ex) {
                             logger.error("Could not login admin", ex);
                         }
                     }

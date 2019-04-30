@@ -12,7 +12,7 @@
 
     <groupId>org.eclipse.smarthome.binding</groupId>
     <artifactId>org.eclipse.smarthome.binding.bco</artifactId>
-    <version>0.10.2-SNAPSHOT</version>
+    <version>0.10.3-SNAPSHOT</version>
     <!--<packaging>eclipse-plugin</packaging>-->
     <packaging>bundle</packaging>
 
@@ -75,9 +75,9 @@
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                <version>4.2.0</version>
+		<version>3.5.1</version>
                 <extensions>true</extensions>
-                <configuration>
+		<configuration>
                     <instructions>
                         <Service-Component>
                             OSGI_INF/*.xml
@@ -101,7 +101,7 @@
                         </Bundle-Description>
                         <!--<Bundle-Activator>org.openhab.binding.rsb.internal.RSBActivator</Bundle-Activator>-->
                         <Bundle-Vendor>openHAB.org</Bundle-Vendor>
-                        <Bundle-RequiredExecutionEnvironment>J2SE-1.5</Bundle-RequiredExecutionEnvironment>
+                        <Bundle-RequiredExecutionEnvironment>J2SE-1.8</Bundle-RequiredExecutionEnvironment>
                         <Bundle-License>http://www.eclipse.org/legal/epl-v10.html</Bundle-License>
                         <Embed-Dependency>
                             *;
@@ -109,17 +109,19 @@
                             inline=false;
                             artifactId=!org.slf4j.*|org.eclipse.*|org.osgi.*|org.apache.felix.fileinstall
                         </Embed-Dependency>
-                        <Embed-Transitive>true</Embed-Transitive>
+			<Embed-Transitive>true</Embed-Transitive>
+			<!-- disable wrong java 9 requirements which is not compatible with openhab osgi. -->
+			<_noee>true</_noee>
                     </instructions>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.6.0</version>
+                <version>3.8.0</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>8</source>
+                    <target>8</target>
                 </configuration>
             </plugin>
             <!--<plugin>-->
@@ -258,7 +260,7 @@
         <!--<deb.name>openhab-addon-binding-rsb</deb.name>-->
         <!--<deb.description>${project.name}</deb.description>-->
         <org.eclipse.smarthome.home></org.eclipse.smarthome.home>
-        <dependency.eclipse.smarthome.version>0.9.0</dependency.eclipse.smarthome.version>
+        <dependency.eclipse.smarthome.version>0.10.0</dependency.eclipse.smarthome.version>
         <dependency.bco.version>2.0-SNAPSHOT</dependency.bco.version>
     </properties>
 

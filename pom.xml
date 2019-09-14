@@ -91,7 +91,7 @@
                         <Import-Package>
                             !rst.*,!rsb.*,!org.openbase.*,!com.googlecode.protobuf.*,!sun.*,!com.fasterxml*,!com.sun.*,
                             !groovy.*,!org.apache.*,!org.codehaus.*,!org.eclipse.jgit.*,
-                            !org.hibernate.*,*
+                            !org.hibernate.*,!org.influxdata.*,*
                         </Import-Package>
                         <Export-Package>org.eclipse.smarthome.binding.bco</Export-Package>
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>

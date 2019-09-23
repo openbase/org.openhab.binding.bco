@@ -18,7 +18,9 @@
 
     <name>BCO Binding</name>
     <inceptionYear>2018</inceptionYear>
-    <description>This binding offers and synchronizes all bco units to the eclipse platform. For example if you are using openhab, the binding makes sure all bco units can be controlled via the sitemap.</description>
+    <description>This binding offers and synchronizes all bco units to the eclipse platform. For example if you are
+        using openhab, the binding makes sure all bco units can be controlled via the sitemap.
+    </description>
 
     <url>https://github.com/openbase/org.eclipse.smarthome.binding.bco/wiki</url>
 
@@ -75,9 +77,9 @@
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-		<version>3.5.1</version>
+                <version>3.5.1</version>
                 <extensions>true</extensions>
-		<configuration>
+                <configuration>
                     <instructions>
                         <Service-Component>
                             OSGI_INF/*.xml
@@ -91,7 +93,7 @@
                         <Import-Package>
                             !rst.*,!rsb.*,!org.openbase.*,!com.googlecode.protobuf.*,!sun.*,!com.fasterxml*,!com.sun.*,
                             !groovy.*,!org.apache.*,!org.codehaus.*,!org.eclipse.jgit.*,
-                            !org.hibernate.*,!org.influxdata.*,*
+                            !org.hibernate.*,*
                         </Import-Package>
                         <Export-Package>org.eclipse.smarthome.binding.bco</Export-Package>
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
@@ -109,9 +111,9 @@
                             inline=false;
                             artifactId=!org.slf4j.*|org.eclipse.*|org.osgi.*|org.apache.felix.fileinstall
                         </Embed-Dependency>
-			<Embed-Transitive>true</Embed-Transitive>
-			<!-- disable wrong java 9 requirements which is not compatible with openhab osgi. -->
-			<_noee>true</_noee>
+                        <Embed-Transitive>true</Embed-Transitive>
+                        <!-- disable wrong java 9 requirements which is not compatible with openhab osgi. -->
+                        <_noee>true</_noee>
                     </instructions>
                 </configuration>
             </plugin>
@@ -268,6 +270,18 @@
         <dependency>
             <groupId>org.openbase</groupId>
             <artifactId>bco.device.openhab</artifactId>
+            <version>${dependency.bco.version}</version>
+            <exclusions>
+                <!-- limit to remote api -->
+                <exclusion>
+                    <groupId>org.openbase</groupId>
+                    <artifactId>bco.dal.control</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.dal.remote</artifactId>
             <version>${dependency.bco.version}</version>
         </dependency>
         <dependency>

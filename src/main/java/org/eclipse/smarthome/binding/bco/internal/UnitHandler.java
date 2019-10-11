@@ -171,7 +171,7 @@ public class UnitHandler extends BaseThingHandler {
     private void updateChannels() throws CouldNotPerformException {
         for (final ServiceType serviceType : unitRemote.getAvailableServiceTypes()) {
             final Message serviceState = unitRemote.getServiceState(serviceType);
-            Set<Class<Command>> commandClasses;
+            Set<Class<? extends Command>> commandClasses;
             try {
                 commandClasses = ServiceTypeCommandMapping.getCommandClasses(serviceType);
             } catch (NotAvailableException ex) {
@@ -179,7 +179,7 @@ public class UnitHandler extends BaseThingHandler {
                 continue;
             }
 
-            for (final Class<Command> commandClass : commandClasses) {
+            for (final Class<? extends Command> commandClass : commandClasses) {
                 try {
                     final ServiceStateCommandTransformer transformer = ServiceStateCommandTransformerPool.getInstance().getTransformer(serviceState.getClass(), commandClass);
                     try {

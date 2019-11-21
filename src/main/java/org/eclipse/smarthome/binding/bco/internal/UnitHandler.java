@@ -55,6 +55,7 @@ import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.controller.Remote;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
+import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
@@ -121,8 +122,10 @@ public class UnitHandler extends BaseThingHandler {
             try {
                 final ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(transformer.transform(command), serviceType, unitRemote);
                 actionParameter.setExecutionTimePeriod(TimeUnit.MINUTES.toMicros(30));
+                actionParameter.setInterruptible(false);
+                actionParameter.setSchedulable(false);
+                actionParameter.setPriority(Priority.HIGH);
                 unitRemote.applyAction(actionParameter);
-                //Services.invokeOperationServiceMethod(serviceType, unitRemote, transformer.transform(command));
             } catch (CouldNotPerformException ex) {
                 logger.warn("Could not update channel {} to value {}", channelUID, command, ex);
                 try {

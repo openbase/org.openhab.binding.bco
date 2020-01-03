@@ -77,7 +77,7 @@ public class UnitHandler extends BaseThingHandler {
 
     private final Logger logger = LoggerFactory.getLogger(UnitHandler.class);
 
-    private final Observer<Remote, ConnectionState.State> connectionStateObserver;
+    private final Observer<Remote<?>, ConnectionState.State> connectionStateObserver;
     private final Observer unitDataObserver, unitConfigObserver;
 
     private UnitRemote<?> unitRemote;

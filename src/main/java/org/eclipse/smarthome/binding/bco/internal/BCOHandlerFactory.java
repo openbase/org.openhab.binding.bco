@@ -31,6 +31,7 @@ import org.eclipse.smarthome.core.thing.binding.BaseThingHandlerFactory;
 import org.eclipse.smarthome.core.thing.binding.ThingHandler;
 import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
 import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
@@ -109,23 +110,20 @@ public class BCOHandlerFactory extends BaseThingHandlerFactory {
                 logger.info("RSBHost changed from {} to {}", oldHost, newHost);
                 logger.info("RSBPort changed from {} to {}", oldPort, newPort);
 
-                RSBDefaultConfig.reload();
                 RSBSharedConnectionConfig.reload();
 
                 // do not perform re-init on initial start because there is no need for it.
                 if (!initialActivate) {
-                    // enable when reconnect works
-//                    try {
-//                        logger.info("Reinit registries");
-//                        Registries.reinitialize();
-//                        logger.info("Reinit units");
-//                        Units.reinitialize();
-//                    } catch (CouldNotPerformException ex) {
-//                        logger.error("Could not reinitialize remotes after host and/or port change!", ex);
-//                    } catch (InterruptedException ex) {
-//                        Thread.currentThread().interrupt();
-//                    }
-
+                    try {
+                        logger.info("Reinit registries");
+                        Registries.reinitialize();
+                        logger.info("Reinit units");
+                        Units.reinitialize();
+                    } catch (CouldNotPerformException ex) {
+                        logger.error("Could not reinitialize remotes after host and/or port change!", ex);
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                    }
                 } else {
                     initialActivate = false;
                 }

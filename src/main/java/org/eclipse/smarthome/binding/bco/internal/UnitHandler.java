@@ -152,8 +152,10 @@ public class UnitHandler extends BaseThingHandler {
         }
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void initialize() {
+        // deprecation usage seems to be ok since just the default method of the BaseThingHandler is deprecated but not the interface method and an explicit overwrite is recommended!
         try {
             unitRemote = Units.getUnit(getThing().getUID().getId(), false);
 
@@ -248,9 +250,11 @@ public class UnitHandler extends BaseThingHandler {
 
     @Override
     public void dispose() {
-        unitRemote.removeConnectionStateObserver(connectionStateObserver);
-        unitRemote.removeConfigObserver(unitConfigObserver);
-        unitRemote.removeDataObserver(unitDataObserver);
+        if(unitRemote != null) {
+            unitRemote.removeConnectionStateObserver(connectionStateObserver);
+            unitRemote.removeConfigObserver(unitConfigObserver);
+            unitRemote.removeDataObserver(unitDataObserver);
+        }
 
         updateStatus(ThingStatus.OFFLINE);
     }

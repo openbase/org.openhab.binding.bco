@@ -284,42 +284,63 @@
             <artifactId>bco.dal.remote</artifactId>
             <version>${dependency.bco.version}</version>
         </dependency>
+        <!--        <dependency>-->
+        <!--            <groupId>org.eclipse.smarthome.core</groupId>-->
+        <!--            <artifactId>org.eclipse.smarthome.core.thing</artifactId>-->
+        <!--            <version>${dependency.eclipse.smarthome.version}</version>-->
+        <!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.eclipse.smarthome.config</groupId>-->
+        <!--            <artifactId>org.eclipse.smarthome.config.core</artifactId>-->
+        <!--            <version>${dependency.eclipse.smarthome.version}</version>-->
+        <!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.eclipse.smarthome.config</groupId>-->
+        <!--            <artifactId>org.eclipse.smarthome.config.discovery</artifactId>-->
+        <!--            <version>${dependency.eclipse.smarthome.version}</version>-->
+        <!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.eclipse.smarthome.core</groupId>-->
+        <!--            <artifactId>org.eclipse.smarthome.core</artifactId>-->
+        <!--            <version>${dependency.eclipse.smarthome.version}</version>-->
+        <!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.eclipse.jdt</groupId>-->
+        <!--            <artifactId>org.eclipse.jdt.annotation</artifactId>-->
+        <!--            <version>2.2.0</version>-->
+        <!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.osgi</groupId>-->
+<!--            <artifactId>org.osgi.compendium</artifactId>-->
+<!--            <version>4.2.0</version>-->
+<!--            <scope>provided</scope>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.osgi</groupId>-->
+<!--            <artifactId>org.osgi.service.component.annotations</artifactId>-->
+<!--            <version>1.4.0</version>-->
+<!--            <scope>provided</scope>-->
+<!--        </dependency>-->
         <dependency>
-            <groupId>org.eclipse.smarthome.core</groupId>
-            <artifactId>org.eclipse.smarthome.core.thing</artifactId>
-            <version>${dependency.eclipse.smarthome.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.smarthome.config</groupId>
-            <artifactId>org.eclipse.smarthome.config.core</artifactId>
-            <version>${dependency.eclipse.smarthome.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.smarthome.config</groupId>
-            <artifactId>org.eclipse.smarthome.config.discovery</artifactId>
-            <version>${dependency.eclipse.smarthome.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.smarthome.core</groupId>
-            <artifactId>org.eclipse.smarthome.core</artifactId>
-            <version>${dependency.eclipse.smarthome.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jdt</groupId>
-            <artifactId>org.eclipse.jdt.annotation</artifactId>
-            <version>2.2.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.compendium</artifactId>
-            <version>4.2.0</version>
+            <groupId>org.openhab.core.bom</groupId>
+            <artifactId>org.openhab.core.bom.compile</artifactId>
+            <version>2.5.0</version>
+            <type>pom</type>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.service.component.annotations</artifactId>
-            <version>1.4.0</version>
+            <groupId>org.openhab.core.bom</groupId>
+            <artifactId>org.openhab.core.bom.openhab-core</artifactId>
+            <version>2.5.0</version>
+            <type>pom</type>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.openhab.core.bom</groupId>
+            <artifactId>org.openhab.core.bom.test</artifactId>
+            <version>2.5.0</version>
+            <type>pom</type>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -340,6 +361,45 @@
             <name>Eclipse Repository</name>
             <url>https://repo.eclipse.org/content/repositories/smarthome-releases</url>
         </repository>
+
+
+        <repository>
+            <id>jcenter</id>
+            <name>JCenter Repository</name>
+            <url>https://jcenter.bintray.com</url>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>openhab-artifactory-release</id>
+            <name>JFrog Artifactory Repository</name>
+            <url>https://openhab.jfrog.io/openhab/libs-release</url>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>openhab-snapshots-release</id>
+            <name>JFrog Artifactory Repository</name>
+            <url>https://openhab.jfrog.io/openhab/libs-snapshot-local</url>
+            <releases>
+                <enabled>false</enabled>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+
     </repositories>
 
 </project>

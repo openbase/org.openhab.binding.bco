@@ -92,7 +92,7 @@
                         <Ignore-Package>org.eclipse.smarthome.binding.bco.internal</Ignore-Package>
                         <Import-Package>
                             !rst.*,!rsb.*,!org.openbase.*,!com.googlecode.protobuf.*,!sun.*,!com.fasterxml*,!com.sun.*,
-                            !groovy.*,!org.apache.*,!org.codehaus.*,!org.eclipse.jgit.*,
+                            !groovy.*,!org.apache.*,!org.codehaus.*,!org.eclipse.jgit.*,!org.junit,
                             !org.hibernate.*,*
                         </Import-Package>
                         <Export-Package>org.eclipse.smarthome.binding.bco</Export-Package>

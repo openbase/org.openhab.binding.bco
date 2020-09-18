@@ -111,6 +111,7 @@ public class BCOHandlerFactory extends BaseThingHandlerFactory {
                 logger.info("RSBPort changed from {} to {}", oldPort, newPort);
 
                 RSBSharedConnectionConfig.reload();
+                logger.info("Middleware configuration finished.");
 
                 // do not perform re-init on initial start because there is no need for it.
                 if (!initialActivate) {
@@ -131,6 +132,7 @@ public class BCOHandlerFactory extends BaseThingHandlerFactory {
 
             if (!SessionManager.getInstance().isLoggedIn()) {
                 try {
+                    logger.info("Establish an authorized connection to bco...");
                     Object credentials = properties.get("credentials");
                     if (!(credentials instanceof String)) {
                         throw new NotAvailableException("Credentials");
@@ -144,6 +146,7 @@ public class BCOHandlerFactory extends BaseThingHandlerFactory {
                             .setCredentials(ByteString.copyFrom(Base64.getDecoder().decode((String) credentials)))
                             .build();
                     SessionManager.getInstance().loginClient(loginCredentials.getId(), loginCredentials, true);
+                    logger.info("Authorization successful");
                 } catch (Exception e) {
                     logger.error("Could not login as openhab user", e);
                     if (!BCOLogin.getSession().isLoggedIn()) {
@@ -155,8 +158,6 @@ public class BCOHandlerFactory extends BaseThingHandlerFactory {
                     }
                 }
             }
-
-
         } catch (JPServiceException ex) {
             logger.error("Could not read or update JPProperty", ex);
         }

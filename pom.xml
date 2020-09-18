@@ -12,7 +12,7 @@
 
     <groupId>org.eclipse.smarthome.binding</groupId>
     <artifactId>org.eclipse.smarthome.binding.bco</artifactId>
-    <version>0.10.3-SNAPSHOT</version>
+    <version>2.5.0-SNAPSHOT</version>
     <!--<packaging>eclipse-plugin</packaging>-->
     <packaging>bundle</packaging>
 
@@ -77,7 +77,7 @@
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                <version>3.5.1</version>
+                <version>5.1.1</version>
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
@@ -91,9 +91,9 @@
                         <Private-Package>org.eclipse.smarthome.binding.bco.internal.*</Private-Package>
                         <Ignore-Package>org.eclipse.smarthome.binding.bco.internal</Ignore-Package>
                         <Import-Package>
-                            !rst.*,!rsb.*,!org.openbase.*,!com.googlecode.protobuf.*,!sun.*,!com.fasterxml*,!com.sun.*,
+                            !rst.*,!rsb.*,!org.openbase.*,!com.google.protobuf.*,!com.googlecode.protobuf.*,!sun.*,!com.fasterxml*,!com.sun.*,
                             !groovy.*,!org.apache.*,!org.codehaus.*,!org.eclipse.jgit.*,!org.junit,
-                            !org.hibernate.*,*
+                            !org.hibernate.*,!groovy.*,!org.codehaus.*,!android.*,!ch.qos.logback.*,!javax.ws.rs.*,!org.objenesis.*,*
                         </Import-Package>
                         <Export-Package>org.eclipse.smarthome.binding.bco</Export-Package>
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
@@ -109,7 +109,8 @@
                             *;
                             scope=compile|runtime;
                             inline=false;
-                            artifactId=!org.slf4j.*|org.eclipse.*|org.osgi.*|org.apache.felix.fileinstall
+                            groupId=!ch.qos.logback|org.fusesource.jansi|org.openhab|org.osgi|junit|org.eclipse.jgit|org.slf4j;
+                            artifactId=!objenesis
                         </Embed-Dependency>
                         <Embed-Transitive>true</Embed-Transitive>
                         <!-- disable wrong java 9 requirements which is not compatible with openhab osgi. -->
@@ -120,7 +121,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.0</version>
+                <version>3.8.1</version>
                 <configuration>
                     <source>8</source>
                     <target>8</target>
@@ -134,7 +135,7 @@
             <plugin>
                 <artifactId>exec-maven-plugin</artifactId>
                 <groupId>org.codehaus.mojo</groupId>
-                <version>1.5.0</version>
+                <version>3.0.0</version>
                 <executions>
                     <execution>
                         <id>Deploy Binding</id>
@@ -154,7 +155,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>license-maven-plugin</artifactId>
-                <version>1.11</version>
+                <version>2.0.0</version>
                 <configuration>
                     <verbose>false</verbose>
                     <licenseName>lgpl_v3</licenseName>
@@ -187,82 +188,13 @@
         </plugins>
     </build>
 
-    <profiles>
-        <profile>
-            <id>deploy</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-source-plugin</artifactId>
-                        <version>3.0.1</version>
-                        <executions>
-                            <execution>
-                                <id>attach-sources</id>
-                                <goals>
-                                    <goal>jar-no-fork</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>3.0.1</version>
-                        <executions>
-                            <execution>
-                                <id>attach-javadocs</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.6</version>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>sonatype</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.7</version>
-                        <extensions>true</extensions>
-                        <configuration>
-                            <serverId>ossrh</serverId>
-                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
-
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!--<bundle.symbolicName>org.openhab.binding.rsb</bundle.symbolicName>-->
         <!--<bundle.namespace>org.openhab.binding.rsb</bundle.namespace>-->
         <!--<deb.name>openhab-addon-binding-rsb</deb.name>-->
         <!--<deb.description>${project.name}</deb.description>-->
-        <org.eclipse.smarthome.home></org.eclipse.smarthome.home>
-        <dependency.eclipse.smarthome.version>0.10.0</dependency.eclipse.smarthome.version>
+        <dependency.openhab.version>2.5.0</dependency.openhab.version>
         <dependency.bco.version>2.0-SNAPSHOT</dependency.bco.version>
     </properties>
 
@@ -272,10 +204,9 @@
             <artifactId>bco.device.openhab</artifactId>
             <version>${dependency.bco.version}</version>
             <exclusions>
-                <!-- limit to remote api -->
                 <exclusion>
-                    <groupId>org.openbase</groupId>
-                    <artifactId>bco.dal.control</artifactId>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -284,63 +215,19 @@
             <artifactId>bco.dal.remote</artifactId>
             <version>${dependency.bco.version}</version>
         </dependency>
-        <!--        <dependency>-->
-        <!--            <groupId>org.eclipse.smarthome.core</groupId>-->
-        <!--            <artifactId>org.eclipse.smarthome.core.thing</artifactId>-->
-        <!--            <version>${dependency.eclipse.smarthome.version}</version>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.eclipse.smarthome.config</groupId>-->
-        <!--            <artifactId>org.eclipse.smarthome.config.core</artifactId>-->
-        <!--            <version>${dependency.eclipse.smarthome.version}</version>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.eclipse.smarthome.config</groupId>-->
-        <!--            <artifactId>org.eclipse.smarthome.config.discovery</artifactId>-->
-        <!--            <version>${dependency.eclipse.smarthome.version}</version>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.eclipse.smarthome.core</groupId>-->
-        <!--            <artifactId>org.eclipse.smarthome.core</artifactId>-->
-        <!--            <version>${dependency.eclipse.smarthome.version}</version>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.eclipse.jdt</groupId>-->
-        <!--            <artifactId>org.eclipse.jdt.annotation</artifactId>-->
-        <!--            <version>2.2.0</version>-->
-        <!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.osgi</groupId>-->
-<!--            <artifactId>org.osgi.compendium</artifactId>-->
-<!--            <version>4.2.0</version>-->
-<!--            <scope>provided</scope>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.osgi</groupId>-->
-<!--            <artifactId>org.osgi.service.component.annotations</artifactId>-->
-<!--            <version>1.4.0</version>-->
-<!--            <scope>provided</scope>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>org.openhab.core.bom</groupId>
             <artifactId>org.openhab.core.bom.compile</artifactId>
-            <version>2.5.0</version>
+            <version>${dependency.openhab.version}</version>
             <type>pom</type>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.openhab.core.bom</groupId>
             <artifactId>org.openhab.core.bom.openhab-core</artifactId>
-            <version>2.5.0</version>
+            <version>${dependency.openhab.version}</version>
             <type>pom</type>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.openhab.core.bom</groupId>
-            <artifactId>org.openhab.core.bom.test</artifactId>
-            <version>2.5.0</version>
-            <type>pom</type>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -356,13 +243,6 @@
     </distributionManagement>
 
     <repositories>
-        <repository>
-            <id>eclipse</id>
-            <name>Eclipse Repository</name>
-            <url>https://repo.eclipse.org/content/repositories/smarthome-releases</url>
-        </repository>
-
-
         <repository>
             <id>jcenter</id>
             <name>JCenter Repository</name>
@@ -388,18 +268,16 @@
             </snapshots>
         </repository>
         <repository>
-            <id>openhab-snapshots-release</id>
-            <name>JFrog Artifactory Repository</name>
-            <url>https://openhab.jfrog.io/openhab/libs-snapshot-local</url>
+            <id>central</id>
+            <name>Maven Central</name>
+            <url>https://repo1.maven.org/maven2/</url>
             <releases>
-                <enabled>false</enabled>
+                <enabled>true</enabled>
                 <updatePolicy>never</updatePolicy>
             </releases>
             <snapshots>
-                <enabled>true</enabled>
+                <enabled>false</enabled>
             </snapshots>
         </repository>
-
     </repositories>
-
 </project>

@@ -122,8 +122,9 @@ public class UnitHandler extends BaseThingHandler {
             try {
                 final ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(transformer.transform(command), serviceType, unitRemote);
                 actionParameter.setExecutionTimePeriod(TimeUnit.MINUTES.toMicros(30));
-                actionParameter.setInterruptible(false);
-                actionParameter.setSchedulable(false);
+                actionParameter.setInterruptible(true);
+                actionParameter.setSchedulable(true);
+                actionParameter.setAutoContinueWithLowPriority(true);
                 actionParameter.setPriority(Priority.HIGH);
                 unitRemote.applyAction(actionParameter);
             } catch (CouldNotPerformException ex) {
@@ -157,8 +158,8 @@ public class UnitHandler extends BaseThingHandler {
     public void initialize() {
         // deprecation usage seems to be ok since just the default method of the BaseThingHandler is deprecated but not the interface method and an explicit overwrite is recommended!
         try {
-            unitRemote = Units.getUnit(getThing().getUID().getId(), false);
 
+            unitRemote = Units.getUnit(getThing().getUID().getId(), false);
             unitRemote.addConnectionStateObserver(connectionStateObserver);
             unitRemote.addConfigObserver(unitConfigObserver);
             unitRemote.addDataObserver(unitDataObserver);

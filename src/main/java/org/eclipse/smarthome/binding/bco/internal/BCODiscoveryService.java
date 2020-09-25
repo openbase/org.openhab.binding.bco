@@ -36,6 +36,7 @@ import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import org.openbase.jul.schedule.SyncObject;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +48,7 @@ import org.openbase.type.domotic.unit.device.DeviceClassType.DeviceClass;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -54,71 +56,109 @@ import java.util.concurrent.Future;
 @Component(service = DiscoveryService.class, immediate = true, configurationPid = "discovery.bco")
 public class BCODiscoveryService extends AbstractDiscoveryService {
 
+    // in seconds
     private static final int TIMEOUT = 30;
+
+    // in milliseconds
+    private static final long OPENHAB_PREPERATION_TIME = TimeUnit.SECONDS.toMillis(5);
 
     private final Logger logger = LoggerFactory.getLogger(BCODiscoveryService.class);
     private final Observer<DataProvider<UnitRegistryData>, UnitRegistryData> unitRegistryObserver;
     private final ProtobufListDiff<String, UnitConfig, UnitConfig.Builder> diff;
 
+    private boolean initialDiscovery;
+
+    // discovery task and lock
+    private Future<Void> discoveryTask;
+    private final SyncObject discoveryTaskLock = new SyncObject("DiscoveryTaskLock");
+
     public BCODiscoveryService() throws IllegalArgumentException {
         super(BCOBindingConstants.THING_TYPES, TIMEOUT);
 
-        diff = new ProtobufListDiff<>();
+        this.diff = new ProtobufListDiff<>();
+        this.initialDiscovery = true;
+
+        // prepare registry observation
         unitRegistryObserver = (observable, unitRegistryData) -> {
-            try {
-                diff.diffMessages(getHandledUnitConfigList());
-
-                // add new units to discovery
-                for (final UnitConfig unitConfig : diff.getNewMessageMap().getMessages()) {
-                    thingDiscovered(getDiscoveryResult(unitConfig));
-                }
-
-                // remove units from discovery
-                for (final UnitConfig unitConfig : diff.getRemovedMessageMap().getMessages()) {
-                    thingRemoved(getThingUID(unitConfig));
-                }
-            } catch (CouldNotPerformException ex) {
-                logger.error("Could not discover things", ex);
-            }
+            triggerDiscovery();
         };
     }
 
-    private Future<Void> discoveryTask;
+    /**
+     * Method adds all units to the openhab inbox and removes outdated ones.
+     */
+    private void triggerDiscovery() {
 
+        synchronized (discoveryTaskLock) {
+            if (discoveryTask != null && !discoveryTask.isDone()) {
+                logger.info("Discovery still running, skip request...");
+                return;
+            }
+
+            discoveryTask = GlobalCachedExecutorService.submit(() -> {
+                try {
+
+                    if (!Registries.isDataAvailable()) {
+                        logger.info("Discovery will be started after the bco registry is available...");
+                        Registries.waitForData();
+                    }
+
+                    // initial waiting required until openhab is ready and knows the thing types bco can handle.
+                    if(initialDiscovery) {
+                        logger.info("Waiting for openhab to prepare the binding registration...");
+                        Thread.sleep(OPENHAB_PREPERATION_TIME);
+                        this.initialDiscovery = false;
+                    }
+
+                    logger.info("Start discovery...");
+
+                    diff.diffMessages(getHandledUnitConfigList());
+
+                    // add new units to discovery
+                    for (final UnitConfig unitConfig : diff.getNewMessageMap().getMessages()) {
+                        thingDiscovered(getDiscoveryResult(unitConfig));
+                    }
+
+                    // remove units from discovery
+                    for (final UnitConfig unitConfig : diff.getRemovedMessageMap().getMessages()) {
+                        thingRemoved(getThingUID(unitConfig));
+                    }
+
+                    logger.info("Discovery successful.");
+                } catch (CouldNotPerformException ex) {
+                    logger.error("Could not discover things", ex);
+                }
+                return null;
+            });
+        }
+    }
+
+    /**
+     * Discovery started by user.
+     */
     @Override
     protected void startScan() {
-
-        if(discoveryTask !=null && !discoveryTask.isDone()) {
-            logger.info("Discovery still running, skip request...");
-            return;
-        }
-
-        discoveryTask = GlobalCachedExecutorService.submit(() -> {
-            try {
-                for (final UnitConfig unitConfig : getHandledUnitConfigList()) {
-                    thingDiscovered(getDiscoveryResult(unitConfig));
-                }
-            } catch (CouldNotPerformException ex) {
-                logger.error("Could not scan for BCO things", ex);
-            }
-            return null;
-        });
+        logger.info("Start scan for new unis...");
+        triggerDiscovery();
     }
 
     @Override
     protected synchronized void stopScan() {
-        discoveryTask.cancel(true);
-        discoveryTask = null;
-        super.stopScan();
+        synchronized (discoveryTaskLock) {
+            discoveryTask.cancel(true);
+            discoveryTask = null;
+            super.stopScan();
+        }
     }
 
-    private List<UnitConfig> getHandledUnitConfigList() throws CouldNotPerformException {
-        try {
-            Registries.waitForData();
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            throw new CouldNotPerformException("Interrupted", ex);
-        }
+    /**
+     * Generates a list with all units that are handled by the bco binding.
+     * @return the list of supported units.
+     * @throws CouldNotPerformException is thrown in case the list could not be generated.
+     * @throws InterruptedException is thrown if the thread was externally interrupted.
+     */
+    private List<UnitConfig> getHandledUnitConfigList() throws CouldNotPerformException, InterruptedException {
+
         final List<UnitConfig> handledUnitConfigs = new ArrayList<>();
         for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs()) {
             // ignore all units without services
@@ -135,14 +175,6 @@ public class BCODiscoveryService extends AbstractDiscoveryService {
             if (!unitConfig.getUnitHostId().isEmpty()) {
                 UnitConfig unitHost = Registries.getUnitRegistry().getUnitConfigById(unitConfig.getUnitHostId());
                 if (unitHost.getUnitType() == UnitType.DEVICE) {
-                    if (!Registries.getClassRegistry().isDataAvailable()) {
-                        try {
-                            Registries.getClassRegistry().waitForData();
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                            throw new CouldNotPerformException("Could not wait for class registry data");
-                        }
-                    }
                     DeviceClass deviceClass = Registries.getClassRegistry().getDeviceClassById(unitHost.getDeviceConfig().getDeviceClassId());
                     if (deviceClass.getBindingConfig().getBindingId().equalsIgnoreCase("openhab")) {
                         continue;
@@ -156,26 +188,29 @@ public class BCODiscoveryService extends AbstractDiscoveryService {
         return handledUnitConfigs;
     }
 
-    //TODO: re-activate if re-init works when changing host and port
-//    @Override
-//    protected void startBackgroundDiscovery() {
-//        logger.info("Start background discovery");
-//        try {
-//            Registries.getUnitRegistry().addDataObserver(unitRegistryObserver);
-//        } catch (NotAvailableException ex) {
-//            logger.warn("Could not start background discovery", ex);
-//        }
-//    }
-//
-//    @Override
-//    protected void stopBackgroundDiscovery() {
-//        logger.info("Stop background discovery");
-//        try {
-//            Registries.getUnitRegistry().removeDataObserver(unitRegistryObserver);
-//        } catch (NotAvailableException ex) {
-//            logger.warn("Could not stop background discovery", ex);
-//        }
-//    }
+    @Override
+    protected void startBackgroundDiscovery() {
+        logger.info("Start background discovery");
+        try {
+            Registries.getUnitRegistry().addDataObserver(unitRegistryObserver);
+        } catch (NotAvailableException ex) {
+            logger.warn("Could not start background discovery", ex);
+        }
+
+        // initial discovery
+        this.initialDiscovery = true;
+        triggerDiscovery();
+    }
+
+    @Override
+    protected void stopBackgroundDiscovery() {
+        logger.info("Stop background discovery");
+        try {
+            Registries.getUnitRegistry().removeDataObserver(unitRegistryObserver);
+        } catch (NotAvailableException ex) {
+            logger.warn("Could not stop background discovery", ex);
+        }
+    }
 
     private ThingUID getThingUID(final UnitConfig unitConfig) {
         return new ThingUID(new ThingTypeUID(BCOBindingConstants.BINDING_ID, BCOBindingConstants.UNIT_THING_TYPE), unitConfig.getId());

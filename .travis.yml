@@ -1,13 +1,11 @@
-  language: java
+language: java
 
 os: linux
 
-dist: xenial
+dist: focal
 
 jdk:
   - openjdk11
-  - openjdk8
-  - openjdk-ea
 
 # cache disabled since it cause many issues where artifacts are not correctly updated.
 #cache:
@@ -20,7 +18,7 @@ install:
 script:
   - mvn test -Dmaven.javadoc.skip=true --batch-mode --fail-fast # --quiet
 
-#before_install:
+# before_install:
 #  - echo $GPG_SECRET_KEYS | base64 --decode | $GPG_EXECUTABLE --import
 #  - echo $GPG_OWNERTRUST | base64 --decode | $GPG_EXECUTABLE --import-ownertrust
 
@@ -83,6 +81,6 @@ jobs:
 
           # trigger upstream projects
           for PROJECT in ${UPSTREAM_PROJECTS}; do
-              sh trigger-travis.sh openbase ${PROJECT} $TRAVIS_ACCESS_TOKEN
+              sh trigger-travis.sh --pro openbase ${PROJECT} $TRAVIS_ACCESS_TOKEN
           done
         fi

@@ -20,8 +20,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          tag_name: release-${{ GITHUB_BASE_REF }}
+          release_name: Release ${{ GITHUB_BASE_REF }}
           draft: false
           prerelease: false
       - name: Upload Release Asset

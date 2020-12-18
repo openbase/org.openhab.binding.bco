@@ -38,25 +38,14 @@ import java.util.Set;
 public class BCOBindingConstants {
 
     public static final String BINDING_ID = "bco";
+    public static final String UNIT_THING_TYPE = "unit";
 
-    // List of all Channel ids
+    // Custom Channels
     public static final String CHANNEL_POWER_LIGHT = "power_state_light";
 
-    public static final String UNIT_THING_TYPE = "unit";
     static Set<ThingTypeUID> THING_TYPES = new HashSet<>();
 
     static {
         THING_TYPES.add(new ThingTypeUID(BINDING_ID, UNIT_THING_TYPE));
     }
-//
-//    static {
-//        //TODO: skip unsupported unit types
-//        for (final UnitType unitType : UnitType.values()) {
-//            THING_TYPES.add(getThingTypeByUnitType(unitType));
-//        }
-//    }
-//
-//    static ThingTypeUID getThingTypeByUnitType(final UnitType unitType) {
-//        return new ThingTypeUID(BINDING_ID, unitType.name().toLowerCase());
-//    }
 }

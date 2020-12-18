@@ -165,6 +165,10 @@ public class BCOHandlerFactory extends BaseThingHandlerFactory {
     @Override
     protected void deactivate(ComponentContext componentContext) {
         super.deactivate(componentContext);
-        logger.warn("Deactivate handler factory");
+
+        // shutdown binding
+        // TODO: 18.12.20 implement proper binding shutdown
+//        Registries.shutdown();
+//        Units.shutdown();
     }
 }

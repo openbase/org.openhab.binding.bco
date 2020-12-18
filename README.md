@@ -30,5 +30,5 @@ Default openhab console password: ```habopen```
 Within the karaf console, the log can be enabled via:
 ```log:set DEBUG org.openbase```
 
-Than you can print the log via:
+Then you can print the log via:
 ```log:tail```

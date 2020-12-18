@@ -31,4 +31,4 @@ Within the karaf console, the log can be enabled via:
 ```log:set DEBUG org.openbase```
 
 Than you can print the log via:
-```log:show``` (todo: validate)
+```log:tail```
